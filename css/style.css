@@ -1,0 +1,49 @@
+html {
+    background-color: rgb(208, 187, 162);
+}
+
+table,
+th,
+td {
+    border: 1px solid;
+}
+
+.borderBlock {
+    width: 4px;
+    height: 4px;
+}
+
+.platformBlock {
+    width: 40px;
+    height: 40px;
+    text-align: center;
+}
+
+.occupied {
+    background-color: black;
+}
+
+.option {
+    background-color: rgb(136, 211, 212);
+}
+
+.option:hover {
+    background-color: rgb(212, 136, 136);
+}
+
+.selected{
+    background-color: rgb(136, 212, 142);
+}
+
+#board {
+    margin: 10px;
+}
+
+#action{
+    padding: 10px;
+}
+
+button {
+    width: auto;
+    min-height: 20px;
+}
