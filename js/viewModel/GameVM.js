@@ -3,7 +3,7 @@ import { Turn } from '../data/Turn.js';
 
 export const VM = (() => {
 
-    function bfsSearchShortestRoute(arena, start, ends) {
+    function bfsSearchShortestRoute(arena, start, ends, opponent) {
         const queue = [];
         const visited = [];
 
@@ -19,7 +19,7 @@ export const VM = (() => {
                 return path.concat([current]); // return path
             }
 
-            const validMoves = VM.findValidMoves(arena, current);
+            const validMoves = VM.findValidMoves(arena, current, opponent);
 
             validMoves.forEach(move => {
                 let isVisited = visited.some(item => item[0] == move[0] && item[1] == move[1]); // check next move is visited
@@ -71,7 +71,7 @@ export const VM = (() => {
             directions.forEach(it => {
                 const dy = py + it[0];
                 const dx = px + it[1];
-                console.log(`${directionLabels[i]} - dy: ${dy}, dx: ${dx}`);
+                // console.log(`${directionLabels[i]} - dy: ${dy}, dx: ${dx}`);
 
                 if (0 <= dy && dy < arena.length && 0 <= dx && dx < arena.length) {
                     let noBlock = arena[dy][dx] > 0;
@@ -98,6 +98,31 @@ export const VM = (() => {
             });
 
             return validMove;
+        },
+
+        findValidBlocks: function (game) {
+            const arena = game.arena;
+            const size = (game.arena.length + 1) / 2;
+            const p1 = game.p1;
+            const p2 = game.p2;
+
+            let verticalBlocks = [];
+            let horizontalBlocks = [];
+            for (let row = 0; row < size - 1; row++) {
+                for (let column = 0; column < size - 1; column++) {
+                    let [x, y] = [1 + column * 2, 1 + row * 2]
+                    let occupied = arena[y][x] < 0
+                    console.log(`(x, y): (${x}, ${y}) occupied: ${occupied}`);
+                    if (!occupied) {
+                        let vtlBlk = [[x, y - 1], [x, y], [x, y + 1]];
+                        let hzlBlk = [[x - 1, y], [x, y], [x + 1, y]];
+                        verticalBlocks.push(vtlBlk);
+                        horizontalBlocks.push(hzlBlk);
+                    }
+                }
+            }
+
+            return verticalBlocks.concat(horizontalBlocks);
         },
 
         isValidBlockPattern: function (block) {
@@ -224,6 +249,25 @@ export const VM = (() => {
             }
 
             return null;
-        }
+        },
+
+        getScore: function (game, turn) {
+            // check p1 
+            const p1Ends = Array.from({ length: game.arena.length }, (_, index) => [index, 0]);
+            let p1ShortestRoute = bfsSearchShortestRoute(game.arena, game.p1, p1Ends, game.p2);
+            let p1Remains = p1ShortestRoute.length - 1
+            console.log(`p1 remains steps: ${p1Remains}`);
+
+            // check p2
+            const p2Ends = Array.from({ length: game.arena.length }, (_, index) => [index, game.arena.length - 1]);
+            let p2ShortestRoute = bfsSearchShortestRoute(game.arena, game.p2, p2Ends, game.p1);
+            let p2Remains = p2ShortestRoute.length - 1
+            console.log(`p2 remains steps: ${p2Remains}`);
+            if (turn == Turn.P1) {
+                return p2Remains - p1Remains
+            } else {
+                return p1Remains - p2Remains
+            }
+        },
     }
 })();

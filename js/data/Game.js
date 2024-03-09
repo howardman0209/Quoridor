@@ -5,4 +5,9 @@ export class Game {
         this.p1 = p1;
         this.p2 = p2;
     }
+
+    deepCopy() {
+        const newGameCopy = JSON.parse(JSON.stringify(this));
+        return newGameCopy;
+    }
 }

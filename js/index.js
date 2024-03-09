@@ -172,6 +172,7 @@ function updateTurnLabel(gameEnd) {
 
 // OnCreate
 const game = VM.initGame(gameSize)
+// const clone = game.deepCopy()
 // console.log(game);
 render(game);
 updateTurnLabel();
@@ -252,5 +253,5 @@ confirmBtn.onclick = () => {
 
         VM.placeBlock(game, selectedBlock);
     }
-    nextTurn(game)
+    nextTurn(game);
 }
