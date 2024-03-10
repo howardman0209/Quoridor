@@ -1,5 +1,6 @@
 import { VM } from './viewModel/GameVM.js';
 import { Turn } from './data/Turn.js';
+import { Action } from './data/Action.js';
 // variable 
 const gameSize = 5;
 let selectedMove = [];
@@ -144,8 +145,7 @@ function selectBlock(selected) {
 }
 
 function deselectBlock(selected) {
-    let found = selectedBlock.indexOf(selected);
-    selectedBlock.splice(found, 1);
+    selectedBlock = selectedBlock.filter(arr => !(arr[0] === selected[0] && arr[1] === selected[1]));
     const selectedSlot = document.getElementById(`c${selected[0]}r${selected[1]}`);
     selectedSlot.classList.remove("selected");
 }
@@ -253,5 +253,30 @@ confirmBtn.onclick = () => {
 
         VM.placeBlock(game, selectedBlock);
     }
+
+    // Count possible blks
+    // let possibleBlks = VM.findValidBlocks(game);
+    // console.log(possibleBlks);
+    // let ii = 0
+    // setInterval(() => {
+    //     let blkSlots = possibleBlks[ii];
+    //     if (ii < possibleBlks.length) {
+    //         console.log(`place blk: ${ii}`);
+    //         blkSlots.forEach(block => {
+    //             const selectedSlot = document.getElementById(`c${block[0]}r${block[1]}`);
+    //             selectedSlot.classList.add("selected");
+    //         });
+    //     }
+
+    //     ii++;
+    // }, 500)
     nextTurn(game);
+}
+
+const suggestBtn = document.getElementById("suggestBtn");
+suggestBtn.onclick = () => {
+    console.log(`suggestBtn clicked`);
+    console.log(selectedBlock);
+    // let bestAction = VM.findBestAction(game, 4, currentTurn);
+    // console.log(bestAction);
 }
