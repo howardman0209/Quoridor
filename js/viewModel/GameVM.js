@@ -54,7 +54,7 @@ export const VM = (() => {
             let p1 = [size - 1, size * 2 - 2] // column
             let p2 = [size - 1, 0]
 
-            let game = new Game(arena, p1, p2);
+            let game = new Game(arena, p1, p2, size - 2, size - 2);
             return game;
         },
 
@@ -196,6 +196,10 @@ export const VM = (() => {
             return arena[row][column] > 0;
         },
 
+        isPlayerRemainsBlock: function (game, turn) {
+            return turn == Turn.P1 ? game.p1Blocks > 0 : game.p2Blocks > 0;
+        },
+
         isDeadBlock: function (game, block) {
             // temporaryPlaceBlock(block)
             const tmpGame = game.deepCopy();
@@ -226,10 +230,15 @@ export const VM = (() => {
             return isDeadBlock;
         },
 
-        placeBlock: function (game, block) {
+        placeBlock: function (game, block, turn) {
             block.forEach(element => {
                 game.arena[element[1]][element[0]] = -1;
             });
+
+            if (turn == undefined) {
+                return
+            }
+            turn == Turn.P1 ? game.p1Blocks-- : game.p2Blocks--;
         },
 
         removeBlock: function (game, block) {
@@ -294,7 +303,7 @@ export const VM = (() => {
             if (action.type == ActionType.MOVE) {
                 this.applyMove(tmpGame, action.move, turn);
             } else {
-                this.placeBlock(tmpGame, action.block);
+                this.placeBlock(tmpGame, action.block, turn);
             }
 
             return tmpGame;

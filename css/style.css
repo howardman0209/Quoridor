@@ -37,11 +37,20 @@ td {
 }
 
 #board {
-    position: absolute;
+    position: relative;
     margin: 10px;
 }
 
-#action {
+#turnLabel {
+    display: inline-block;
+}
+
+#blocksRemain {
+    margin-left: 20px;
+    display: inline-block;
+}
+
+#container {
     padding: 10px;
 }
 

@@ -47,6 +47,7 @@ function nextTurn(game) {
     } else {
         endGame();
     }
+    updateBlocksRemain();
     updateTurnLabel(winner != null);
 }
 
@@ -170,12 +171,26 @@ function updateTurnLabel(gameEnd) {
     turnLabel.innerText = `Turn: ${currentTurn} ${gameEnd ? "win" : ""}`;
 }
 
+function updateBlocksRemain() {
+    const blocksRemain = document.getElementById("blocksRemain");
+    blocksRemain.innerText = `${Turn.P1}: block x${game.p1Blocks}\n${Turn.P2}: block x${game.p2Blocks}`;
+    if (currentTurn == Turn.P1 && game.p1Blocks == 0 || currentTurn == Turn.P2 && game.p2Blocks == 0) {
+        disableBlockBtn()
+    }
+}
+
+function disableBlockBtn() {
+    const blockBtn = document.getElementById("blockBtn");
+    blockBtn.disabled = true;
+}
+
 // OnCreate
 const game = VM.initGame(gameSize)
 // const clone = game.deepCopy()
 // console.log(game);
 render(game);
 updateTurnLabel();
+updateBlocksRemain();
 //[[2, 1], [3, 1], [4, 1]]
 //[[1, 0], [1, 1], [1, 2]]
 // let block = [[1, 0], [1, 1], [1, 2]]
@@ -227,8 +242,17 @@ confirmBtn.onclick = () => {
     if (isBlock) {
         console.log(`${currentTurn} Block`);
         console.log(selectedBlock);
-        let validBlockPattern = VM.isValidBlockPattern(selectedBlock);
-        if (!validBlockPattern) {
+
+        let isPlayerRemainsBlock = VM.isPlayerRemainsBlock(game, currentTurn)
+        if (!isPlayerRemainsBlock) {
+            console.log(`No block remains`);
+            clearSelectedBlock();
+            alert("No block remains.");
+            return
+        }
+
+        let isValidBlockPattern = VM.isValidBlockPattern(selectedBlock);
+        if (!isValidBlockPattern) {
             console.log(`invalid block pattern --- - ---`);
             clearSelectedBlock();
             alert("Please select correct block pattern.");
@@ -251,7 +275,7 @@ confirmBtn.onclick = () => {
             return
         }
 
-        VM.placeBlock(game, selectedBlock);
+        VM.placeBlock(game, selectedBlock, currentTurn);
     }
 
     // Count possible blks
