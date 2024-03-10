@@ -2,19 +2,20 @@ html {
     background-color: rgb(208, 187, 162);
 }
 
-table,
 th,
 td {
     border: 1px solid;
 }
 
 .borderBlock {
-    width: 8px;
+    min-width: 8px;
+    max-height: 8px;
     height: 8px;
 }
 
 .platformBlock {
-    width: 40px;
+    min-width: 40px;
+    max-height: 40px;
     height: 40px;
     text-align: center;
 }
@@ -31,15 +32,16 @@ td {
     background-color: rgb(212, 136, 136);
 }
 
-.selected{
+.selected {
     background-color: rgb(136, 212, 142);
 }
 
 #board {
+    position: absolute;
     margin: 10px;
 }
 
-#action{
+#action {
     padding: 10px;
 }
 

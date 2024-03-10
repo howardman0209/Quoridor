@@ -79,20 +79,27 @@ export const VM = (() => {
                     let noBlock = arena[dy][dx] > 0;
                     // console.log(`noBlock: ${noBlock}`);
                     if (noBlock) {
-                        let noOpponent = opponent == undefined || !(py + 2 * it[0] == oy && px + 2 * it[1] == ox);
-
-                        if (noOpponent) {
+                        let meetOpponent = opponent != undefined && (py + 2 * it[0] == oy && px + 2 * it[1] == ox);
+                        // console.log(`meetOpponent: ${meetOpponent}`);
+                        if (!meetOpponent) {
                             let move = [px + (2 * it[1]), py + (2 * it[0])];
                             if (isMoveValid(...move)) {
                                 validMove.push(move);
                             }
                         } else {
-                            let opponentMoves = this.findValidMoves(arena, [ox, oy]);
-                            opponentMoves.forEach(move => {
-                                if (isMoveValid(...move)) {
-                                    validMove.push(move);
-                                }
-                            });
+                            let canJump = isMoveValid(px + 3 * it[1], py + 3 * it[0]) && arena[py + 3 * it[0]][px + 3 * it[1]] > 0;
+                            // console.log(`canJump: ${canJump}`);
+                            if (canJump) {
+                                let move = [px + (4 * it[1]), py + (4 * it[0])];
+                                validMove.push(move);
+                            } else {
+                                let opponentMoves = this.findValidMoves(arena, [ox, oy]);
+                                opponentMoves.forEach(move => {
+                                    if (isMoveValid(...move)) {
+                                        validMove.push(move);
+                                    }
+                                });
+                            }
                         }
                     }
                 }
@@ -239,7 +246,7 @@ export const VM = (() => {
             }
         },
 
-        checkPlayerWin: function (game) {
+        checkWinner: function (game) {
             // check p1 
             const p1Ends = Array.from({ length: game.arena.length }, (_, index) => [index, 0]);
             let p1ShortestRoute = bfsSearchShortestRoute(game.arena, game.p1, p1Ends);
@@ -301,7 +308,7 @@ export const VM = (() => {
             let [player, opponent] = turn == Turn.P1 ? [game.p1, game.p2] : [game.p2, game.p1];
 
             // Check if the maximum depth or a terminal game state has been reached
-            if (depth === 0 || this.checkPlayerWin(simulation)) {
+            if (depth === 0 || this.checkWinner(simulation)) {
                 // console.log(depth === 0 ? `depth reach the end` : `someone win`);
                 return score;
             }
@@ -365,17 +372,26 @@ export const VM = (() => {
             let bestScore = -Infinity;
             let bestAction = null;
 
-            // define player & opponent
+            //define player & opponent
             let [player, opponent] = turn == Turn.P1 ? [game.p1, game.p2] : [game.p2, game.p1];
 
-            // Evaluate blocks and moves together
-            const possibleActions = [...this.findValidBlocks(game), ...this.findValidMoves(game.arena, player, opponent)];
+            //evaluate moves
+            const possibleMoves = this.findValidMoves(game.arena, player, opponent);
+            for (const nextMove of possibleMoves) {
+                const moveScore = this.minimax(game, turn, new Action(nextMove, undefined), depth, true, -Infinity, Infinity);
+                if (moveScore > bestScore) {
+                    bestScore = moveScore;
+                    bestAction = new Action(nextMove, undefined);
+                }
+            }
 
-            for (const action of possibleActions) {
-                const actionScore = this.minimax(game, turn, action, depth, true, -Infinity, Infinity);
-                if (actionScore > bestScore) {
-                    bestScore = actionScore;
-                    bestAction = action;
+            //evaluate blocks
+            const possibleBlocks = this.findValidBlocks(game);
+            for (const nextBlock of possibleBlocks) {
+                const blockScore = this.minimax(game, turn, new Action(undefined, nextBlock), depth, true, -Infinity, Infinity);
+                if (blockScore > bestScore) {
+                    bestScore = blockScore;
+                    bestAction = new Action(undefined, nextBlock);
                 }
             }
 

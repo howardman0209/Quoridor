@@ -40,7 +40,7 @@ function render(game) {
 function nextTurn(game) {
     clearSelection();
     render(game);
-    let winner = VM.checkPlayerWin(game);
+    let winner = VM.checkWinner(game);
     console.log(`winner: ${winner}`);
     if (winner == null) { // check game is end
         currentTurn = currentTurn == Turn.P1 ? Turn.P2 : Turn.P1; // switch turn
@@ -200,7 +200,7 @@ moveBtn.onclick = () => {
     let player = currentTurn == Turn.P1 ? game.p1 : game.p2;
     let opponent = currentTurn != Turn.P1 ? game.p1 : game.p2;
     let validMoves = VM.findValidMoves(game.arena, player, opponent);
-    console.log(validMoves);
+    // console.log(validMoves);
     showMoveOptions(validMoves);
 }
 
@@ -276,7 +276,6 @@ confirmBtn.onclick = () => {
 const suggestBtn = document.getElementById("suggestBtn");
 suggestBtn.onclick = () => {
     console.log(`suggestBtn clicked`);
-    console.log(selectedBlock);
-    // let bestAction = VM.findBestAction(game, 4, currentTurn);
-    // console.log(bestAction);
+    let bestAction = VM.findBestAction(game, 1, currentTurn);
+    console.log(bestAction);
 }
