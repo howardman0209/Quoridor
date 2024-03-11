@@ -216,15 +216,15 @@ function updateTurnLabel(gameEnd) {
 function updateBlocksRemain() {
     const blocksRemain = document.getElementById("blocksRemain");
     blocksRemain.innerHTML = `<em class="blockStorage">${Turn.P1}: block x${game.p1Blocks}</em>\n <em class="blockStorage">${Turn.P2}: block x${game.p2Blocks}</em>`;
-    if (currentTurn == Turn.P1 && game.p1Blocks == 0 || currentTurn == Turn.P2 && game.p2Blocks == 0) {
-        disableBlockBtn()
+    if ((currentTurn == Turn.P1 && game.p1Blocks == 0) || (currentTurn == Turn.P2 && game.p2Blocks == 0)) {
+        const blockBtn = document.getElementById("blockBtn");
+        blockBtn.disabled = true;
+    } else {
+        const blockBtn = document.getElementById("blockBtn");
+        blockBtn.disabled = false;
     }
 }
 
-function disableBlockBtn() {
-    const blockBtn = document.getElementById("blockBtn");
-    blockBtn.disabled = true;
-}
 
 // OnCreate
 const game = VM.initGame(gameSize);

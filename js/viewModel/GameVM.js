@@ -54,7 +54,7 @@ export const VM = (() => {
             let p1 = [size - 1, size * 2 - 2] // column
             let p2 = [size - 1, 0]
 
-            let blockLimit = Math.round(size * (size - 2) * 5 / 32);
+            let blockLimit = Math.max(Math.round(size * (size - 2) * 5 / 32), 1);
             let game = new Game(arena, p1, p2, blockLimit, blockLimit);
             return game;
         },
