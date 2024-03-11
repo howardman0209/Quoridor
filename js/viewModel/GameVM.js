@@ -214,11 +214,11 @@ export const VM = (() => {
             let p2 = tmpGame.p2;
 
             // check p1 
-            const p1Ends = Array.from({ length: arena.length }, (_, index) => [index, 0]);
+            const p1Ends = this.getEnds(arena, Turn.P1)
             let p1ShortestRoute = bfsSearchShortestRoute(arena, p1, p1Ends);
 
             // check p2
-            const p2Ends = Array.from({ length: arena.length }, (_, index) => [index, arena.length - 1]);
+            const p2Ends = this.getEnds(arena, Turn.P2)
             let p2ShortestRoute = bfsSearchShortestRoute(arena, p2, p2Ends);
 
             // check p1p2 no valid route
@@ -253,6 +253,12 @@ export const VM = (() => {
             } else {
                 game.p2 = move;
             }
+        },
+
+        getEnds: function (arena, turn) {
+            const ends = turn == Turn.P1 ? Array.from({ length: arena.length }, (_, index) => [index, 0]) :
+                Array.from({ length: arena.length }, (_, index) => [index, arena.length - 1]);
+            return ends;
         },
 
         checkWinner: function (game) {

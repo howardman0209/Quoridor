@@ -1,6 +1,6 @@
 import { VM } from './viewModel/GameVM.js';
 import { Turn } from './data/Turn.js';
-import { Action } from './data/Action.js';
+import { AI } from './ai/AI.js';
 // variable 
 const gameSize = 5;
 let selectedMove = [];
@@ -342,6 +342,12 @@ confirmBtn.onclick = () => {
 const suggestBtn = document.getElementById("suggestBtn");
 suggestBtn.onclick = () => {
     console.log(`suggestBtn clicked`);
-    let bestAction = VM.findBestAction(game, 1, currentTurn);
-    console.log(bestAction);
+    // let bestAction = VM.findBestAction(game, 1, currentTurn);
+    // console.log(bestAction);
+    let [start, opponent, ends] = currentTurn == Turn.P1 ?
+        [game.p1, game.p2, VM.getEnds(game.arena, currentTurn)]
+        : [game.p2, game.p1, VM.getEnds(game.arena, currentTurn)];
+
+    let possibleRoutes = AI.lookUpRoutes(game.arena, start, ends, opponent)
+    console.log(possibleRoutes);
 }
