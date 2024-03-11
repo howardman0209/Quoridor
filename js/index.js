@@ -81,24 +81,61 @@ function resetMoveOptions(validMoves) {
 }
 
 function showBlockOptions(arena) {
-    for (let row = 0; row < arena.length; row++) {
-        for (let column = 0; column < arena[row].length; column++) {
-            if (arena[row][column] > 0) {
+    for (let row = 0; row < arena.length - 1; row++) {
+        for (let column = 0; column < arena[row].length - 1; column++) {
+            // find vertical & horizontal options
+            let isVerticalBlockOptions = row % 2 == 0 && column % 2 != 0;
+            let isHorizontalBlockOptions = row % 2 != 0 && column % 2 == 0;
+
+            // init varible block and isAvailable
+            let block = [];
+            let isAvailable = false;
+
+            // set varible block and isAvailable by case
+            if (isVerticalBlockOptions) {
+                block = [[column, row], [column, row + 1], [column, row + 2]];
+                isAvailable = arena[row][column] > 0 && arena[row + 1][column] > 0 && arena[row + 2][column] > 0;
+            } else if (isHorizontalBlockOptions) {
+                block = [[column, row], [column + 1, row], [column + 2, row]];
+                isAvailable = arena[row][column] > 0 && arena[row][column + 1] > 0 && arena[row][column + 2] > 0;
+            }
+
+            // check block option is valid
+            if (block.length > 0 && isAvailable) {
                 const blkSlot = document.getElementById(`c${column}r${row}`);
                 blkSlot.classList.add("option");
+                blkSlot.onmouseover = () => {
+                    blockOptionsMouseEffect(block, true);
+                }
+                blkSlot.onmouseleave = () => {
+                    blockOptionsMouseEffect(block, false);
+                }
                 blkSlot.onclick = () => {
-                    if (!selectedBlock.some(item => item[0] == column && item[1] == row)) {
-                        selectBlock([column, row]);
-                    } else {
-                        deselectBlock([column, row]);
-                    }
-
-                    if (selectedBlock.length == 3) {
+                    block.forEach(part => {
+                        selectBlock([part[0], part[1]]);
                         resetBlockOptions(arena);
-                    }
+                    });
                 }
             }
         }
+    }
+}
+
+function rgb(r, g, b) {
+    return 'rgb(' + [(r || 0), (g || 0), (b || 0)].join(',') + ')';
+}
+
+function blockOptionsMouseEffect(block, isHover) {
+    if (isHover) {
+        block.forEach(part => {
+            const blkSlot = document.getElementById(`c${part[0]}r${part[1]}`);
+            blkSlot.style.backgroundColor = rgb(212, 136, 136);
+        });
+    } else {
+        block.forEach(part => {
+            const blkSlot = document.getElementById(`c${part[0]}r${part[1]}`);
+            blkSlot.style.backgroundColor = "";
+        });
     }
 }
 
@@ -109,6 +146,8 @@ function resetBlockOptions(arena) {
                 const blkSlot = document.getElementById(`c${column}r${row}`);
                 blkSlot.classList.remove("option");
                 blkSlot.onclick = null;
+                blkSlot.onmouseover = null;
+                blkSlot.onmouseleave = null;
             }
         }
     }
@@ -120,6 +159,8 @@ function clearAllOption(arena) {
             const blkSlot = document.getElementById(`c${column}r${row}`);
             blkSlot.classList.remove("option");
             blkSlot.onclick = null;
+            blkSlot.onmouseover = null;
+            blkSlot.onmouseleave = null;
         }
     }
 }
@@ -142,6 +183,7 @@ function clearSelectedMove() {
 function selectBlock(selected) {
     selectedBlock.push(selected);
     const selectedSlot = document.getElementById(`c${selected[0]}r${selected[1]}`);
+    selectedSlot.style.backgroundColor = "";
     selectedSlot.classList.add("selected");
 }
 
@@ -173,7 +215,7 @@ function updateTurnLabel(gameEnd) {
 
 function updateBlocksRemain() {
     const blocksRemain = document.getElementById("blocksRemain");
-    blocksRemain.innerHTML= `<em class="blockStorage">${Turn.P1}: block x${game.p1Blocks}</em>\n <em class="blockStorage">${Turn.P2}: block x${game.p2Blocks}</em>`;
+    blocksRemain.innerHTML = `<em class="blockStorage">${Turn.P1}: block x${game.p1Blocks}</em>\n <em class="blockStorage">${Turn.P2}: block x${game.p2Blocks}</em>`;
     if (currentTurn == Turn.P1 && game.p1Blocks == 0 || currentTurn == Turn.P2 && game.p2Blocks == 0) {
         disableBlockBtn()
     }
@@ -185,7 +227,7 @@ function disableBlockBtn() {
 }
 
 // OnCreate
-const game = VM.initGame(gameSize)
+const game = VM.initGame(gameSize);
 // const clone = game.deepCopy()
 // console.log(game);
 render(game);
@@ -243,7 +285,7 @@ confirmBtn.onclick = () => {
         console.log(`${currentTurn} Block`);
         console.log(selectedBlock);
 
-        let isPlayerRemainsBlock = VM.isPlayerRemainsBlock(game, currentTurn)
+        let isPlayerRemainsBlock = VM.isPlayerRemainsBlock(game, currentTurn);
         if (!isPlayerRemainsBlock) {
             console.log(`No block remains`);
             clearSelectedBlock();
@@ -259,7 +301,7 @@ confirmBtn.onclick = () => {
             return
         }
 
-        let isAvailableToPlaceBlock = VM.isAvailableToPlaceBlock(game.arena, selectedBlock)
+        let isAvailableToPlaceBlock = VM.isAvailableToPlaceBlock(game.arena, selectedBlock);
         if (!isAvailableToPlaceBlock) {
             console.log(`place is occupied`);
             clearSelectedBlock();
@@ -267,7 +309,7 @@ confirmBtn.onclick = () => {
             return
         }
 
-        let isDeadBlock = VM.isDeadBlock(game, selectedBlock)
+        let isDeadBlock = VM.isDeadBlock(game, selectedBlock);
         if (isDeadBlock) {
             console.log(`cannot place a dead block`);
             clearSelectedBlock();
