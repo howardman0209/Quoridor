@@ -1,3 +1,5 @@
+Steps to set up
+
 1. insatll php 
 $ brew install php 
 

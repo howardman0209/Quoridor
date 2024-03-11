@@ -33,8 +33,8 @@ function render(game) {
     const p1Slot = document.getElementById(`c${game.p1[0]}r${game.p1[1]}`);
     const p2Slot = document.getElementById(`c${game.p2[0]}r${game.p2[1]}`);
 
-    p1Slot.innerHTML += "P1";
-    p2Slot.innerHTML += "P2";
+    p1Slot.innerHTML += `<em id="pawn">P1</em>`;
+    p2Slot.innerHTML += `<em id="pawn">P2</em>`;
 }
 
 function nextTurn(game) {
