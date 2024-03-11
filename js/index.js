@@ -173,7 +173,7 @@ function updateTurnLabel(gameEnd) {
 
 function updateBlocksRemain() {
     const blocksRemain = document.getElementById("blocksRemain");
-    blocksRemain.innerText = `${Turn.P1}: block x${game.p1Blocks}\n${Turn.P2}: block x${game.p2Blocks}`;
+    blocksRemain.innerHTML= `<em class="blockStorage">${Turn.P1}: block x${game.p1Blocks}</em>\n <em class="blockStorage">${Turn.P2}: block x${game.p2Blocks}</em>`;
     if (currentTurn == Turn.P1 && game.p1Blocks == 0 || currentTurn == Turn.P2 && game.p2Blocks == 0) {
         disableBlockBtn()
     }

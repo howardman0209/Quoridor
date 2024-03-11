@@ -26,7 +26,7 @@ td {
 }
 
 .occupied {
-    background-color: black;
+    background-color: rgb(202, 168, 102);
 }
 
 .option {
@@ -53,6 +53,11 @@ td {
 #blocksRemain {
     margin-left: 20px;
     display: inline-block;
+}
+
+.blockStorage {
+    display: flex;
+    /* color: rgb(202, 168, 102); */
 }
 
 #container {
