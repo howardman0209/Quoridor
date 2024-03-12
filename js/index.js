@@ -1,6 +1,7 @@
 import { VM } from './viewModel/GameVM.js';
 import { Turn } from './data/Turn.js';
 import { AI } from './ai/AI.js';
+import { Direction } from './data/Direction.js';
 // variable 
 const gameSize = 5;
 let selectedMove = [];
@@ -46,6 +47,7 @@ function nextTurn(game) {
         currentTurn = currentTurn == Turn.P1 ? Turn.P2 : Turn.P1; // switch turn
     } else {
         endGame();
+        return;
     }
     updateBlocksRemain();
     updateTurnLabel(winner != null);
@@ -343,11 +345,7 @@ const suggestBtn = document.getElementById("suggestBtn");
 suggestBtn.onclick = () => {
     console.log(`suggestBtn clicked`);
     // let bestAction = VM.findBestAction(game, 1, currentTurn);
-    // console.log(bestAction);
-    let [start, opponent, ends] = currentTurn == Turn.P1 ?
-        [game.p1, game.p2, VM.getEnds(game.arena, currentTurn)]
-        : [game.p2, game.p1, VM.getEnds(game.arena, currentTurn)];
-
-    let possibleRoutes = AI.lookUpRoutes(game.arena, start, ends, opponent)
-    console.log(possibleRoutes);
+    // console.log(Direction.getByDelta([0, 2]));
+    let moveOrBlock = AI.moveOrBlock(game, currentTurn);
+    console.log(moveOrBlock);
 }

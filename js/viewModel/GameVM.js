@@ -192,9 +192,7 @@ export const VM = (() => {
         },
 
         isAvailableToPlaceBlock: function (arena, block) {
-            let row = block[1][1]
-            let column = block[1][0]
-            return arena[row][column] > 0;
+            return block.every(part => arena[part[1]][part[0]] > 0);
         },
 
         isPlayerRemainsBlock: function (game, turn) {
