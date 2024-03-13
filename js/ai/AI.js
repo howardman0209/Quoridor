@@ -47,41 +47,61 @@ export const AI = (() => {
 
         lookUpRoutesBetween: function (arena, start, end, opponent) {
             console.log(`start: [${start}], end: [${end}], opponent: [${opponent}]`);
-            const possiblePaths = [];
-            const queue = [];
-            const visited = [];
-            queue.push([start, []]);
-            visited.push(start);
+            const rows = arena.length;
+            const cols = arena[0].length;
 
+            const label = Array.from({ length: (rows + 1) / 2 }, (_, rowIndex) =>
+                Array.from({ length: (cols + 1) / 2 }, (_, columnIndex) =>
+                    rowIndex * (cols + 1) / 2 + columnIndex + 1
+                )
+            );
+            console.log(label);
+            const visited = Array.from({ length: rows }, () => Array(cols).fill(false));
+            const queue = [[start, []]];
+            const routes = [];
+            const getLabel = (x, y) => { return label[y / 2][x / 2] };
+            const reachEnd = (x, y) => { return x == end[0] && y == end[1] };
+
+            // Mark start position as visited
+            visited[start[0]][start[1]] = true;
+
+            let counter = 0;
+            let layer = 0;
             while (queue.length > 0) {
-                const [current, path] = queue.shift();
-                console.log(`current: [${current}]`);
-                console.log(`path`);
-                console.log(path);
+                const [currentPos, path] = queue.shift();
+                const [x, y] = currentPos;
+                console.log(`current: [${currentPos}] (${getLabel(...currentPos)}) counter: ${counter} layer: ${layer}`);
+                counter++;
+                // console.log(`path`);
+                // console.log(path);
 
-                if (end[0] == current[0] && end[1] == current[1]) { // check reach ends
-                    possiblePaths.push(path.concat([current]));
-                } else if (end[1] == current[1]) {
-                    continue;
+                // // Check if the current position is the end position
+                // if (reachEnd(x, y)) {
+                //     routes.push([...path, currentPos]);
+                //     continue;
+                // }
+
+                // Get all possible moves from the current position
+                let moves = VM.findValidMoves(arena, currentPos, opponent).sort((a, b) => b[1] - a[1]);
+                const parent = path[path.length - 1];
+                if (parent != undefined) {
+                    console.log(`parent: ${getLabel(...parent)}`);
+                    moves = moves.filter(slot => slot[0] != parent[0] || slot[1] != parent[1]);
                 }
+                console.log(moves);
 
-                const validMoves = VM.findValidMoves(arena, current, opponent);
-
-                validMoves.forEach(move => {
-                    // console.log(`move: ${move}`);
-                    let isVisited = visited.some(item => item[0] == move[0] && item[1] == move[1]); // check next move is visited
-                    // console.log(`isVisited: ${isVisited}`);
-                    if (!isVisited) {
-                        const newPath = path.concat([current]);
-                        queue.push([move, newPath]);
-                        if (!(end[0] == move[0] && end[1] == move[1])) {
-                            visited.push(move);
-                        }
+                // Explore each possible move
+                for (const move of moves) {
+                    const [newX, newY] = move;
+                    // Check if the position has been visited
+                    if (!visited[newX][newY]) {
+                        visited[newX][newY] = true;
+                        queue.push([move, [...path, currentPos]]);
                     }
-                });
+                }
             }
 
-            return possiblePaths;
+            return routes;
         },
 
         lookUpShortestRoute: function (game, turn) {

@@ -3,7 +3,7 @@ import { Turn } from './data/Turn.js';
 import { AI } from './ai/AI.js';
 import { Direction } from './data/Direction.js';
 // variable 
-const gameSize = 5;
+const gameSize = 3;
 let selectedMove = [];
 let selectedBlock = [];
 let currentTurn = Turn.P1;
@@ -346,6 +346,10 @@ suggestBtn.onclick = () => {
     console.log(`suggestBtn clicked`);
     // let bestAction = VM.findBestAction(game, 1, currentTurn);
     // console.log(Direction.getByDelta([0, 2]));
-    let moveOrBlock = AI.moveOrBlock(game, currentTurn);
-    console.log(moveOrBlock);
+    // let moveOrBlock = AI.moveOrBlock(game, currentTurn);
+    // console.log(moveOrBlock);
+
+    let check = AI.lookUpRoutesBetween(game.arena, game.p1, [4, 0], game.p2)
+    console.log(`result:`);
+    console.log(check);
 }
