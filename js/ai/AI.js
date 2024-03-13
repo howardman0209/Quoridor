@@ -9,9 +9,8 @@ export const AI = (() => {
         // once reach any end will stop and try other path to remaining end(s)
         lookUpRoutes: function (game, turn) {
             let arena = game.arena;
-            let [player, opponent, playerEnds] = turn == Turn.P1 ?
+            const [player, opponent, playerEnds] = turn == Turn.P1 ?
                 [game.p1, game.p2, VM.getEnds(arena, Turn.P1)] : [game.p2, game.p1, VM.getEnds(arena, Turn.P2)];
-            const ends = turn == Turn.P1 ? VM.getEnds(arena, Turn.P1) : VM.getEnds(arena, Turn.P2);
             const possiblePaths = [];
             const queue = [];
             const visited = [];
@@ -46,9 +45,48 @@ export const AI = (() => {
             return possiblePaths;
         },
 
+        lookUpRoutesBetween: function (arena, start, end, opponent) {
+            console.log(`start: [${start}], end: [${end}], opponent: [${opponent}]`);
+            const possiblePaths = [];
+            const queue = [];
+            const visited = [];
+            queue.push([start, []]);
+            visited.push(start);
+
+            while (queue.length > 0) {
+                const [current, path] = queue.shift();
+                console.log(`current: [${current}]`);
+                console.log(`path`);
+                console.log(path);
+
+                if (end[0] == current[0] && end[1] == current[1]) { // check reach ends
+                    possiblePaths.push(path.concat([current]));
+                } else if (end[1] == current[1]) {
+                    continue;
+                }
+
+                const validMoves = VM.findValidMoves(arena, current, opponent);
+
+                validMoves.forEach(move => {
+                    // console.log(`move: ${move}`);
+                    let isVisited = visited.some(item => item[0] == move[0] && item[1] == move[1]); // check next move is visited
+                    // console.log(`isVisited: ${isVisited}`);
+                    if (!isVisited) {
+                        const newPath = path.concat([current]);
+                        queue.push([move, newPath]);
+                        if (!(end[0] == move[0] && end[1] == move[1])) {
+                            visited.push(move);
+                        }
+                    }
+                });
+            }
+
+            return possiblePaths;
+        },
+
         lookUpShortestRoute: function (game, turn) {
-            let arena = game.arena;
-            let [player, opponent, playerEnds] = turn == Turn.P1 ?
+            const arena = game.arena;
+            const [player, opponent, playerEnds] = turn == Turn.P1 ?
                 [game.p1, game.p2, VM.getEnds(arena, Turn.P1)] : [game.p2, game.p1, VM.getEnds(arena, Turn.P2)];
 
             const queue = [];
@@ -156,31 +194,40 @@ export const AI = (() => {
                 return blocks;
             }
 
-            return [current[0] + dx / 2, current[1] + dy / 2];
+            return null;
         },
 
-        getReachableEnds: function () {
-
+        getReachableEnds: function (game, turn) {
+            let routes = this.lookUpRoutes(game, turn);
+            return routes.map(route => { return route[route.length - 1] });
         },
 
         findCriticalSlots: function (game, turn) {
-            let [player, opponent] = turn == Turn.P1 ? [game.p1, game.p2] : [game.p2, game.p1];
-            let routes = this.lookUpRoutes(game, turn);
+            const [player, opponent] = turn == Turn.P1 ? [game.p1, game.p2] : [game.p2, game.p1];
+            const criticalSlots = [];
+            const reachableEnds = this.getReachableEnds(game, turn);
+            reachableEnds.forEach(end => {
+                const routes = this.lookUpRoutesBetween(game.arena, player, end, opponent);
+                console.log(`from: [${player}] to [${end}], opponent at [${opponent}]`);
+                console.log(routes);
+                routes.forEach(route => {
+                    for (let i = route.length - 1; i > 0; i--) {
+                        let [current, next] = [route[i - 1], route[i]]
+                        if (criticalSlots.some(slot => slot[0] == current[0] && slot[1] == current[1])) {
+                            break; // skip check if current is already be regarded as critical slot
+                        }
 
-            let criticalSlots = [];
-            routes.forEach(route => {
-                // console.log(route);
-                for (let i = route.length - 1; i > 0; i--) {
-                    let blocks = this.getBlocksInBetween(route[i - 1], route[i], game.arena.length);
-                    // console.log(blocks);
-                    let validBlocks = blocks.filter(block => VM.isAvailableToPlaceBlock(game.arena, block) && !VM.isDeadBlock(game, block));
-                    console.log(validBlocks);
-                    let canBlock = validBlocks.length != 0
-                    if (canBlock) {
-                        criticalSlots.push(route[i - 1]);
-                        break;
+                        let blocks = this.getBlocksInBetween(current, next, game.arena.length);
+                        // console.log(blocks);
+                        let validBlocks = blocks.filter(block => VM.isAvailableToPlaceBlock(game.arena, block) && !VM.isDeadBlock(game, block));
+                        // console.log(validBlocks);
+                        let canBlock = validBlocks.length != 0;
+                        if (canBlock) {
+                            criticalSlots.push(current);
+                            break;
+                        }
                     }
-                }
+                });
             });
 
             return criticalSlots;
