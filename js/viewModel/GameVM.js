@@ -39,23 +39,11 @@ export const VM = (() => {
 
     return {
         initGame: function (size) {
-            let arena = [];
-            for (let row = 0; row < size * 2 - 1; row++) {
-                let rows = [];
-                for (let column = 0; column < size * 2 - 1; column++) {
-                    if (row % 2 != 0 || column % 2 != 0) {
-                        rows.push(1); // borderBlock
-                    } else {
-                        rows.push(0); // platformBlock
-                    }
-                }
-                arena.push(rows);
-            }
             let p1 = [size - 1, size * 2 - 2] // column
             let p2 = [size - 1, 0]
 
             let blockLimit = Math.max(Math.round(size * (size - 2) * 5 / 32), 5);
-            let game = new Game(arena, p1, p2, blockLimit, blockLimit, Turn.P1);
+            let game = new Game(size, blockLimit, blockLimit, Turn.P1);
             return game;
         },
 

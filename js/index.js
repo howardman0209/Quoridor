@@ -2,6 +2,7 @@ import { VM } from './viewModel/GameVM.js';
 import { Turn } from './data/Turn.js';
 import { AI } from './ai/AI.js';
 import { Direction } from './data/Direction.js';
+import { Log } from '../js/util/Log.js';
 // variable 
 const gameSize = 5;
 let selectedMove = [];
@@ -31,8 +32,8 @@ function render(game) {
     board.innerHTML = `<table>${tableContent}</table>`;
 
     // render p1, p2
-    const p1Slot = document.getElementById(`c${game.p1[0]}r${game.p1[1]}`);
-    const p2Slot = document.getElementById(`c${game.p2[0]}r${game.p2[1]}`);
+    const p1Slot = document.getElementById(`c${game.p1.x}r${game.p1.y}`);
+    const p2Slot = document.getElementById(`c${game.p2.x}r${game.p2.y}`);
 
     p1Slot.innerHTML += `<em id="pawn">P1</em>`;
     p2Slot.innerHTML += `<em id="pawn">P2</em>`;
@@ -366,9 +367,11 @@ suggestBtn.onclick = () => {
     console.log(`suggestBtn clicked`);
     // let bestAction = VM.findBestAction(game, 1, currentTurn);
     // console.log(Direction.getByDelta([0, 2]));
-    let moveOrBlock = AI.moveOrBlock(game, currentTurn);
-    console.log(moveOrBlock);
+    // let moveOrBlock = AI.moveOrBlock(game, currentTurn);
+    // Log.d("moveOrBlock", moveOrBlock);
 
+    // Log.d(`test`, game.findValidMoves(game.currentTurn));
+    Log.d(`test`, game.lookUpShortestRoute(game.currentTurn, false));
     // let check = AI.lookUpRoutesBetween(game.arena, game.p1, [0, 0], game.p2);
     // let check = AI.lookUpRoutes(game, currentTurn);
     // console.log(`result:`);
