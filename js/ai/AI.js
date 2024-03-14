@@ -46,7 +46,7 @@ export const AI = (() => {
         },
 
         lookUpRoutesBetween: function (arena, start, end, opponent) {
-            console.log(`start: [${start}], end: [${end}], opponent: [${opponent}]`);
+            // console.log(`start: [${start}], end: [${end}], opponent: [${opponent}]`);
             const rows = arena.length;
             const cols = arena[0].length;
 
@@ -55,53 +55,90 @@ export const AI = (() => {
                     rowIndex * (cols + 1) / 2 + columnIndex + 1
                 )
             );
-            console.log(label);
-            const visited = Array.from({ length: rows }, () => Array(cols).fill(false));
+            // console.log(label);
+            const steps = Array.from({ length: (rows + 1) / 2 }, () => Array((cols + 1) / 2).fill(0));
+            // console.log(steps);
+            const visited = Array.from({ length: (rows + 1) / 2 }, () => Array((cols + 1) / 2).fill(0));
             const queue = [[start, []]];
-            const routes = [];
-            const getLabel = (x, y) => { return label[y / 2][x / 2] };
+            const getLabel = (x, y) => { return 0 <= y / 2 && y / 2 <= label.length && 0 <= x / 2 && x / 2 <= label.length ? label[y / 2][x / 2] : null };
+            const getSteps = (x, y) => { return 0 <= y / 2 && y / 2 <= steps.length && 0 <= x / 2 && x / 2 <= steps.length ? steps[y / 2][x / 2] : null };
+            const markVisited = (x, y) => { visited[y / 2][x / 2] = 1 };
+            const isVisited = (x, y) => { return visited[y / 2][x / 2] == 1 };
             const reachEnd = (x, y) => { return x == end[0] && y == end[1] };
 
+            if (opponent != undefined && reachEnd(...opponent)) {
+                return [];
+            }
+
+            // Construct steps table 
             // Mark start position as visited
-            visited[start[0]][start[1]] = true;
+            markVisited(start[0], start[1])
 
             let counter = 0;
-            let layer = 0;
             while (queue.length > 0) {
                 const [currentPos, path] = queue.shift();
-                const [x, y] = currentPos;
-                console.log(`current: [${currentPos}] (${getLabel(...currentPos)}) counter: ${counter} layer: ${layer}`);
+                const [x, y] = [currentPos[0] / 2, currentPos[1] / 2];
+                const parent = path[path.length - 1];
+                let label = null
+                if (parent != undefined) {
+                    label = getLabel(...parent)
+                }
+                // console.log(`current: [${currentPos}] (${getLabel(...currentPos)}) counter: ${counter} parent: ${label}`);
                 counter++;
-                // console.log(`path`);
-                // console.log(path);
 
-                // // Check if the current position is the end position
-                // if (reachEnd(x, y)) {
-                //     routes.push([...path, currentPos]);
-                //     continue;
-                // }
+                let value = 0
+                if (parent != undefined) {
+                    value = getSteps(...parent)
+                }
+                steps[y][x] = value + 1; // assign step
 
                 // Get all possible moves from the current position
-                let moves = VM.findValidMoves(arena, currentPos, opponent).sort((a, b) => b[1] - a[1]);
-                const parent = path[path.length - 1];
-                if (parent != undefined) {
-                    console.log(`parent: ${getLabel(...parent)}`);
-                    moves = moves.filter(slot => slot[0] != parent[0] || slot[1] != parent[1]);
-                }
-                console.log(moves);
+                let moves = VM.findValidMoves(arena, currentPos).sort((a, b) => b[1] - a[1]);
 
                 // Explore each possible move
                 for (const move of moves) {
                     const [newX, newY] = move;
                     // Check if the position has been visited
-                    if (!visited[newX][newY]) {
-                        visited[newX][newY] = true;
+                    if (isVisited(newX, newY) == 0) {
+                        markVisited(newX, newY);
                         queue.push([move, [...path, currentPos]]);
                     }
                 }
             }
+            console.log(steps);
+            // console.log(visited);
 
-            return routes;
+            // search steps table to find all routes
+            const dfsResult = []
+            const dfs = (currentNode, path) => {
+                let currentStep = getSteps(...currentNode);
+                let possibleNodes = VM.findValidMoves(arena, currentNode);
+                possibleNodes = possibleNodes.filter(node => getSteps(...node) < currentStep);
+                if (possibleNodes.length > 0) {
+                    for (const nextNode of possibleNodes) {
+                        path.concat([currentNode]).concat(dfs(nextNode, path.concat([currentNode])));
+                    }
+                } else {
+                    // console.log(`path`);
+                    // console.log(path.concat([currentNode]));
+                    dfsResult.push(path.concat([currentNode]));
+                }
+            }
+
+            dfs(end, [])
+            // console.log(`dfsResult`);
+            // console.log(dfsResult);
+            const finalResult = []
+            for (let route of dfsResult) {
+                if (opponent != undefined) {
+                    route = route.filter(slot => slot[0] != opponent[0] || slot[1] != opponent[1]);
+                }
+                finalResult.push(route.reverse());
+            }
+            // console.log(`finalResult`);
+            // console.log(finalResult);
+
+            return finalResult;
         },
 
         lookUpShortestRoute: function (game, turn) {
@@ -250,7 +287,7 @@ export const AI = (() => {
                 });
             });
 
-            return criticalSlots;
+            return criticalSlots.filter(slot => slot[1] != 0);
         },
 
         findCriticalMoves: function () {
