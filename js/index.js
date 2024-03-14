@@ -341,6 +341,26 @@ confirmBtn.onclick = () => {
     nextTurn(game);
 }
 
+const saveLoadBtn = document.getElementById("saveLoadBtn");
+saveLoadBtn.onclick = () => {
+    const gameStateIO = document.getElementById("gameStateIO");
+    if (gameStateIO.value == "") {
+        console.log(`save Btn clicked`);
+        gameStateIO.value = JSON.stringify(game);
+    } else {
+        console.log(`Load Btn clicked`);
+        let data = null;
+        try {
+            data = JSON.parse(gameStateIO.value)
+            game.loadData(data);
+            render(game);
+        } catch (error) {
+            alert(error);
+        }
+        gameStateIO.value = "";
+    }
+}
+
 const suggestBtn = document.getElementById("suggestBtn");
 suggestBtn.onclick = () => {
     console.log(`suggestBtn clicked`);
