@@ -19,10 +19,13 @@ function render(game) {
     for (let row = 0; row < arena.length; row++) {
         tableContent += "<tr>";
         for (let column = 0; column < arena[row].length; column++) {
+            const colorRGB = arena[row][column] % 2 != 0 ? rgb(90, 90, 200) : rgb(168, 138, 41)
+            const placedBlockStyle = arena[row][column] < 0 ? `style="background-color:${colorRGB};"` : ""
             tableContent +=
                 `<td 
                     id="c${column}r${row}"
                     class=${arena[row][column] < 0 ? "occupied" : ""} ${row % 2 != 0 || column % 2 != 0 ? "borderBlock" : "platformBlock"}
+                    ${placedBlockStyle}
                     onclick=null
                 >
                 </td>`;
@@ -217,7 +220,7 @@ function getPawn(turn) {
     return `<span class="pawn" style="background-color:${colorRGB};"></span>`
 }
 
-function getBlock(turn){
+function getBlock(turn) {
     const colorRGB = turn == Turn.P1 ? rgb(90, 90, 200) : rgb(168, 138, 41)
     return `<span class="block" style="background-color:${colorRGB};"></span>`
 }

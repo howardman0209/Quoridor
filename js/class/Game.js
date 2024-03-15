@@ -130,7 +130,7 @@ export class Game {
 
     placeBlock(block) {
         block.forEach(element => {
-            this.arena[element[1]][element[0]] = -1;
+            this.arena[element[1]][element[0]] = this.currentTurn == Turn.P1 ? -1 : -2;
         });
 
         const player = this.getPlayer();
