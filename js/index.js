@@ -1,4 +1,4 @@
-import { GameCO } from './companionObj/GameCO.js';
+import { GameHelper } from './globalObject/GameHelper.js';
 import { Turn } from './enum/Turn.js';
 import { AI } from './ai/AI.js';
 import { Log } from '../js/util/Log.js';
@@ -214,7 +214,7 @@ function updateBlocksRemain() {
 
 
 // OnCreate
-const game = GameCO.initGame(gameSize);
+const game = GameHelper.initGame(gameSize);
 // const clone = game.deepCopy()
 // console.log(game);
 render(game);
@@ -306,7 +306,7 @@ saveLoadBtn.onclick = () => {
 const suggestBtn = document.getElementById("suggestBtn");
 suggestBtn.onclick = () => {
     console.log(`suggestBtn clicked`);
-    // let bestAction = GameCO.findBestAction(game, 1, currentTurn);
+    // let bestAction = GameHelper.findBestAction(game, 1, currentTurn);
     // console.log(Direction.getByDelta([0, 2]));
     let moveOrBlock = AI.moveOrBlock(game);
     Log.d("moveOrBlock", moveOrBlock);

@@ -1,4 +1,4 @@
-import { GameCO } from '../companionObj/GameCO.js';
+import { GameHelper } from '../globalObject/GameHelper.js';
 import { ActionType } from '../enum/ActionType.js';
 import { Direction } from '../enum/Direction.js';
 import { Log } from '../util/Log.js';
@@ -55,7 +55,7 @@ export const AI = (() => {
                 steps[y][x] = value + 1; // assign step
 
                 // Get all possible moves from the current position
-                let moves = GameCO.findValidMoves(arena, currentPos).sort((a, b) => b[1] - a[1]);
+                let moves = GameHelper.findValidMoves(arena, currentPos).sort((a, b) => b[1] - a[1]);
 
                 // Explore each possible move
                 for (const move of moves) {
@@ -74,7 +74,7 @@ export const AI = (() => {
             const dfsResult = []
             const dfs = (currentNode, path) => {
                 let currentStep = getSteps(...currentNode);
-                let possibleNodes = GameCO.findValidMoves(arena, currentNode);
+                let possibleNodes = GameHelper.findValidMoves(arena, currentNode);
                 possibleNodes = possibleNodes.filter(node => getSteps(...node) < currentStep);
                 if (possibleNodes.length > 0) {
                     for (const nextNode of possibleNodes) {

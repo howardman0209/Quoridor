@@ -3,7 +3,7 @@ import { Turn } from '../enum/Turn.js';
 import { Action } from '../dataClass/Action.js';
 import { ActionType } from '../enum/ActionType.js';
 
-export const GameCO = (() => {
+export const GameHelper = (() => {
     return {
         initGame: function (size) {
             let game = new Game(size, Turn.P1);
@@ -26,7 +26,7 @@ export const GameCO = (() => {
                     return path.concat([current]); // return path
                 }
 
-                const validMoves = GameCO.findValidMoves(arena, current, opponent);
+                const validMoves = GameHelper.findValidMoves(arena, current, opponent);
 
                 validMoves.forEach(move => {
                     let isVisited = visited.some(item => item[0] == move[0] && item[1] == move[1]); // check next move is visited
