@@ -10,8 +10,6 @@ export class Game {
         this.p1 = this.#initPlayer(arenaSize, Turn.P1);
         this.p2 = this.#initPlayer(arenaSize, Turn.P2);
         this.currentTurn = initialTurn;
-        // Log.d(`P1`, this.#initPlayer(arenaSize, Turn.P1));
-        // Log.d(`P2`, this.#initPlayer(arenaSize, Turn.P2));
     }
 
     #initArena(size) {
@@ -42,8 +40,6 @@ export class Game {
         this.arena = game.arena;
         this.p1 = game.p1;
         this.p2 = game.p2;
-        this.p1Blocks = game.p1Blocks;
-        this.p2Blocks = game.p2Blocks;
         this.currentTurn = game.currentTurn;
     }
 
