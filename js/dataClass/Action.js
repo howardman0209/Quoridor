@@ -1,4 +1,6 @@
 // Data Class
+import { ActionType } from '../enum/ActionType.js';
+
 export class Action {
     constructor(move, block) {
         this.move = move;
@@ -6,8 +8,3 @@ export class Action {
         this.type = move != undefined ? ActionType.MOVE : ActionType.BLOCK;
     }
 }
-
-export const ActionType = Object.freeze({
-    MOVE: 'MOVE',
-    BLOCK: 'BLOCK'
-});

@@ -1,4 +1,4 @@
-import { Turn } from '../data/Turn.js';
+import { Turn } from '../enum/Turn.js';
 
 export class Player {
     constructor(turn, arenaSize, blockLimit) {
@@ -14,11 +14,7 @@ export class Player {
     #getGoals(turn, arenaSize) {
         const ends = turn == Turn.P1 ? Array.from({ length: arenaSize }, (_, index) => [index * 2, 0]) :
             Array.from({ length: arenaSize }, (_, index) => [index * 2, arenaSize * 2 - 2]);
-        console.log(ends);
+        // console.log(ends);
         return ends;
-    }
-
-    usedBlock() {
-        this.remainingBlocks--;
     }
 }

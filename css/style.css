@@ -50,8 +50,12 @@ td {
     display: inline-block;
 }
 
+#winnerLabel {
+    display: inline-block;
+}
+
 #blocksRemain {
-    margin-left: 20px;
+    margin-Right: 20px;
     display: inline-block;
 }
 

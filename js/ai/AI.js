@@ -1,7 +1,7 @@
-import { VM } from '../viewModel/GameVM.js';
-import { ActionType } from '../data/Action.js';
-import { Turn } from '../data/Turn.js';
-import { Direction } from '../data/Direction.js';
+import { GameCO } from '../companionObj/GameCO.js';
+import { ActionType } from '../enum/ActionType.js';
+import { Turn } from '../enum/Turn.js';
+import { Direction } from '../enum/Direction.js';
 
 export const AI = (() => {
     return {
@@ -10,7 +10,7 @@ export const AI = (() => {
         lookUpRoutes: function (game, turn) {
             let arena = game.arena;
             const [player, opponent, playerEnds] = turn == Turn.P1 ?
-                [game.p1, game.p2, VM.getEnds(arena, Turn.P1)] : [game.p2, game.p1, VM.getEnds(arena, Turn.P2)];
+                [game.p1, game.p2, GameCO.getEnds(arena, Turn.P1)] : [game.p2, game.p1, GameCO.getEnds(arena, Turn.P2)];
             const possiblePaths = [];
             const queue = [];
             const visited = [];
@@ -29,7 +29,7 @@ export const AI = (() => {
                     continue;
                 }
 
-                const validMoves = VM.findValidMoves(arena, current, opponent);
+                const validMoves = GameCO.findValidMoves(arena, current, opponent);
 
                 validMoves.forEach(move => {
                     let isVisited = visited.some(item => item[0] == move[0] && item[1] == move[1]); // check next move is visited
@@ -93,7 +93,7 @@ export const AI = (() => {
                 steps[y][x] = value + 1; // assign step
 
                 // Get all possible moves from the current position
-                let moves = VM.findValidMoves(arena, currentPos).sort((a, b) => b[1] - a[1]);
+                let moves = GameCO.findValidMoves(arena, currentPos).sort((a, b) => b[1] - a[1]);
 
                 // Explore each possible move
                 for (const move of moves) {
@@ -112,7 +112,7 @@ export const AI = (() => {
             const dfsResult = []
             const dfs = (currentNode, path) => {
                 let currentStep = getSteps(...currentNode);
-                let possibleNodes = VM.findValidMoves(arena, currentNode);
+                let possibleNodes = GameCO.findValidMoves(arena, currentNode);
                 possibleNodes = possibleNodes.filter(node => getSteps(...node) < currentStep);
                 if (possibleNodes.length > 0) {
                     for (const nextNode of possibleNodes) {
@@ -144,7 +144,7 @@ export const AI = (() => {
         lookUpShortestRoute: function (game, turn) {
             const arena = game.arena;
             const [player, opponent, playerEnds] = turn == Turn.P1 ?
-                [game.p1, game.p2, VM.getEnds(arena, Turn.P1)] : [game.p2, game.p1, VM.getEnds(arena, Turn.P2)];
+                [game.p1, game.p2, GameCO.getEnds(arena, Turn.P1)] : [game.p2, game.p1, GameCO.getEnds(arena, Turn.P2)];
 
             const queue = [];
             const visited = [];
@@ -161,7 +161,7 @@ export const AI = (() => {
                     return path.concat([current]); // return path
                 }
 
-                const validMoves = VM.findValidMoves(arena, current, opponent);
+                const validMoves = GameCO.findValidMoves(arena, current, opponent);
 
                 validMoves.forEach(move => {
                     let isVisited = visited.some(item => item[0] == move[0] && item[1] == move[1]); // check next move is visited
@@ -180,10 +180,10 @@ export const AI = (() => {
         moveOrBlock: function (game, turn) {
             let arena = game.arena;
             let [player, opponent, playerEnds, opponentEnds] = turn == Turn.P1 ?
-                [game.p1, game.p2, VM.getEnds(arena, Turn.P1), VM.getEnds(arena, Turn.P2)]
-                : [game.p2, game.p1, VM.getEnds(arena, Turn.P2), VM.getEnds(arena, Turn.P1)];
+                [game.p1, game.p2, GameCO.getEnds(arena, Turn.P1), GameCO.getEnds(arena, Turn.P2)]
+                : [game.p2, game.p1, GameCO.getEnds(arena, Turn.P2), GameCO.getEnds(arena, Turn.P1)];
 
-            if (!VM.isPlayerRemainsBlock(game, turn)) {
+            if (!GameCO.isPlayerRemainsBlock(game, turn)) {
                 return ActionType.MOVE; // Theorem 1
             }
 
@@ -276,7 +276,7 @@ export const AI = (() => {
 
                         let blocks = this.getBlocksInBetween(current, next, game.arena.length);
                         // console.log(blocks);
-                        let validBlocks = blocks.filter(block => VM.isAvailableToPlaceBlock(game.arena, block) && !VM.isDeadBlock(game, block));
+                        let validBlocks = blocks.filter(block => GameCO.isAvailableToPlaceBlock(game.arena, block) && !GameCO.isDeadBlock(game, block));
                         // console.log(validBlocks);
                         let canBlock = validBlocks.length != 0;
                         if (canBlock) {

@@ -1,13 +1,12 @@
-import { VM } from './viewModel/GameVM.js';
-import { Turn } from './data/Turn.js';
+import { GameCO } from './companionObj/GameCO.js';
+import { Turn } from './enum/Turn.js';
 import { AI } from './ai/AI.js';
-import { Direction } from './data/Direction.js';
+import { Direction } from './enum/Direction.js';
 import { Log } from '../js/util/Log.js';
 // variable 
 const gameSize = 5;
 let selectedMove = [];
 let selectedBlock = [];
-let currentTurn = Turn.P1;
 
 // Functions
 function render(game) {
@@ -39,19 +38,18 @@ function render(game) {
     p2Slot.innerHTML += `<em id="pawn">P2</em>`;
 }
 
-function nextTurn(game) {
+function nextTurn() {
     clearSelection();
     render(game);
-    let winner = VM.checkWinner(game);
-    console.log(`winner: ${winner}`);
-    if (winner == null) { // check game is end
-        currentTurn = currentTurn == Turn.P1 ? Turn.P2 : Turn.P1; // switch turn
-    } else {
+    let winner = game.checkWinner();
+    // console.log(`winner: ${winner}`);
+    if (winner != null) { // check game is end
         endGame();
-        return;
+        setWinnerLabel();
+    } else {
+        updateBlocksRemain();
+        updateTurnLabel();
     }
-    updateBlocksRemain();
-    updateTurnLabel(winner != null);
 }
 
 function endGame() {
@@ -83,45 +81,24 @@ function resetMoveOptions(validMoves) {
     });
 }
 
-function showBlockOptions(arena) {
-    for (let row = 0; row < arena.length - 1; row++) {
-        for (let column = 0; column < arena[row].length - 1; column++) {
-            // find vertical & horizontal options
-            let isVerticalBlockOptions = row % 2 == 0 && column % 2 != 0;
-            let isHorizontalBlockOptions = row % 2 != 0 && column % 2 == 0;
-
-            // init varible block and isAvailable
-            let block = [];
-            let isAvailable = false;
-
-            // set varible block and isAvailable by case
-            if (isVerticalBlockOptions) {
-                block = [[column, row], [column, row + 1], [column, row + 2]];
-                isAvailable = arena[row][column] > 0 && arena[row + 1][column] > 0 && arena[row + 2][column] > 0;
-            } else if (isHorizontalBlockOptions) {
-                block = [[column, row], [column + 1, row], [column + 2, row]];
-                isAvailable = arena[row][column] > 0 && arena[row][column + 1] > 0 && arena[row][column + 2] > 0;
-            }
-
-            // check block option is valid
-            if (block.length > 0 && isAvailable) {
-                const blkSlot = document.getElementById(`c${column}r${row}`);
-                blkSlot.classList.add("option");
-                blkSlot.onmouseover = () => {
-                    blockOptionsMouseEffect(block, true);
-                }
-                blkSlot.onmouseleave = () => {
-                    blockOptionsMouseEffect(block, false);
-                }
-                blkSlot.onclick = () => {
-                    block.forEach(part => {
-                        selectBlock([part[0], part[1]]);
-                        resetBlockOptions(arena);
-                    });
-                }
-            }
+function showBlockOptions(validBlocks) {
+    validBlocks.forEach(block => {
+        const firstPart = block[0]
+        const blkSlot = document.getElementById(`c${firstPart[0]}r${firstPart[1]}`);
+        blkSlot.classList.add("option");
+        blkSlot.onmouseover = () => {
+            blockOptionsMouseEffect(block, true);
         }
-    }
+        blkSlot.onmouseleave = () => {
+            blockOptionsMouseEffect(block, false);
+        }
+        blkSlot.onclick = () => {
+            block.forEach(part => {
+                selectBlock([part[0], part[1]]);
+                resetBlockOptions();
+            });
+        }
+    });
 }
 
 function rgb(r, g, b) {
@@ -142,7 +119,8 @@ function blockOptionsMouseEffect(block, isHover) {
     }
 }
 
-function resetBlockOptions(arena) {
+function resetBlockOptions() {
+    const arena = game.arena;
     for (let row = 0; row < arena.length; row++) {
         for (let column = 0; column < arena[row].length; column++) {
             if (arena[row][column] > 0) {
@@ -211,26 +189,31 @@ function clearSelection() {
     clearSelectedBlock();
 }
 
-function updateTurnLabel(gameEnd) {
+function updateTurnLabel() {
     const turnLabel = document.getElementById("turnLabel");
-    turnLabel.innerText = `Turn: ${currentTurn} ${gameEnd ? "win" : ""}`;
+    turnLabel.innerText = `Turn: ${game.currentTurn}`;
+}
+
+function setWinnerLabel() {
+    const winnerLabel = document.getElementById("winnerLabel");
+    winnerLabel.innerText = `WIN`;
 }
 
 function updateBlocksRemain() {
     const blocksRemain = document.getElementById("blocksRemain");
-    blocksRemain.innerHTML = `<em class="blockStorage">${Turn.P1}: block x${game.p1Blocks}</em>\n <em class="blockStorage">${Turn.P2}: block x${game.p2Blocks}</em>`;
-    if ((currentTurn == Turn.P1 && game.p1Blocks == 0) || (currentTurn == Turn.P2 && game.p2Blocks == 0)) {
-        const blockBtn = document.getElementById("blockBtn");
-        blockBtn.disabled = true;
-    } else {
+    blocksRemain.innerHTML = `<em class="blockStorage">${Turn.P1}: block x${game.p1.remainingBlocks}</em>\n <em class="blockStorage">${Turn.P2}: block x${game.p2.remainingBlocks}</em>`;
+    if (game.getPlayer().remainingBlocks > 0) {
         const blockBtn = document.getElementById("blockBtn");
         blockBtn.disabled = false;
+    } else {
+        const blockBtn = document.getElementById("blockBtn");
+        blockBtn.disabled = true;
     }
 }
 
 
 // OnCreate
-const game = VM.initGame(gameSize);
+const game = GameCO.initGame(gameSize);
 // const clone = game.deepCopy()
 // console.log(game);
 render(game);
@@ -239,34 +222,31 @@ updateBlocksRemain();
 //[[2, 1], [3, 1], [4, 1]]
 //[[1, 0], [1, 1], [1, 2]]
 // let block = [[1, 0], [1, 1], [1, 2]]
-// console.log("isValidBlockPattern: " + VM.isValidBlockPattern(block))
-// console.log("isAvailableToPlaceBlock: " + VM.isAvailableToPlaceBlock(game.arena, block))
-// console.log("isDeadBlock: " + VM.isDeadBlock(game, [[0, 1], [1, 1], [2, 1], [3, 1], [4, 1], [5, 1], [6, 1], [7, 1], [8, 1]]))
 // console.log(game);
 
 const blockBtn = document.getElementById("blockBtn");
 blockBtn.onclick = () => {
-    console.log(`blockBtn clicked`);
+    // console.log(`blockBtn clicked`);
     clearSelection();
     clearAllOption(game.arena);
-    showBlockOptions(game.arena);
+    let validBlocks = game.getValidBlocks();
+    // Log.d(`validBlocks`, validBlocks);
+    showBlockOptions(validBlocks);
 }
 
 const moveBtn = document.getElementById("moveBtn");
 moveBtn.onclick = () => {
-    console.log(`moveBtn clicked`);
+    // console.log(`moveBtn clicked`);
     clearSelection();
     clearAllOption(game.arena);
-    let player = currentTurn == Turn.P1 ? game.p1 : game.p2;
-    let opponent = currentTurn != Turn.P1 ? game.p1 : game.p2;
-    let validMoves = VM.findValidMoves(game.arena, player, opponent);
+    let validMoves = game.getValidMoves(true);
     // console.log(validMoves);
     showMoveOptions(validMoves);
 }
 
 const confirmBtn = document.getElementById("confirmBtn");
 confirmBtn.onclick = () => {
-    console.log(`confirmBtn clicked`);
+    // console.log(`confirmBtn clicked`);
     clearAllOption(game.arena);
 
     let isMove = selectedMove.length > 0;
@@ -279,16 +259,16 @@ confirmBtn.onclick = () => {
     }
 
     if (isMove) {
-        console.log(`${currentTurn} Move`);
-        console.log(selectedMove);
-        VM.applyMove(game, selectedMove, currentTurn);
+        console.log(`${game.currentTurn} Move`);
+        Log.d(`MOVE`, selectedMove);
+        game.applyMove(selectedMove);
     }
 
     if (isBlock) {
-        console.log(`${currentTurn} Block`);
-        console.log(selectedBlock);
+        console.log(`${game.currentTurn} Block`);
+        Log.d(`BLOCK`, selectedBlock);
 
-        let isPlayerRemainsBlock = VM.isPlayerRemainsBlock(game, currentTurn);
+        let isPlayerRemainsBlock = game.getPlayer().remainingBlocks > 0;
         if (!isPlayerRemainsBlock) {
             console.log(`No block remains`);
             clearSelectedBlock();
@@ -296,60 +276,20 @@ confirmBtn.onclick = () => {
             return
         }
 
-        let isValidBlockPattern = VM.isValidBlockPattern(selectedBlock);
-        if (!isValidBlockPattern) {
-            console.log(`invalid block pattern --- - ---`);
-            clearSelectedBlock();
-            alert("Please select correct block pattern.");
-            return
-        }
-
-        let isAvailableToPlaceBlock = VM.isAvailableToPlaceBlock(game.arena, selectedBlock);
-        if (!isAvailableToPlaceBlock) {
-            console.log(`place is occupied`);
-            clearSelectedBlock();
-            alert("The place is occupied.");
-            return
-        }
-
-        let isDeadBlock = VM.isDeadBlock(game, selectedBlock);
-        if (isDeadBlock) {
-            console.log(`cannot place a dead block`);
-            clearSelectedBlock();
-            alert("You cannot place a dead block. Please reselect.");
-            return
-        }
-
-        VM.placeBlock(game, selectedBlock, currentTurn);
+        game.placeBlock(selectedBlock);
     }
 
-    // Count possible blks
-    // let possibleBlks = VM.findValidBlocks(game);
-    // console.log(possibleBlks);
-    // let ii = 0
-    // setInterval(() => {
-    //     let blkSlots = possibleBlks[ii];
-    //     if (ii < possibleBlks.length) {
-    //         console.log(`place blk: ${ii}`);
-    //         blkSlots.forEach(block => {
-    //             const selectedSlot = document.getElementById(`c${block[0]}r${block[1]}`);
-    //             selectedSlot.classList.add("selected");
-    //         });
-    //     }
-
-    //     ii++;
-    // }, 500)
-    nextTurn(game);
+    nextTurn();
 }
 
 const saveLoadBtn = document.getElementById("saveLoadBtn");
 saveLoadBtn.onclick = () => {
     const gameStateIO = document.getElementById("gameStateIO");
     if (gameStateIO.value == "") {
-        console.log(`save Btn clicked`);
+        // console.log(`save Btn clicked`);
         gameStateIO.value = JSON.stringify(game);
     } else {
-        console.log(`Load Btn clicked`);
+        // console.log(`Load Btn clicked`);
         let data = null;
         try {
             data = JSON.parse(gameStateIO.value)
@@ -365,13 +305,11 @@ saveLoadBtn.onclick = () => {
 const suggestBtn = document.getElementById("suggestBtn");
 suggestBtn.onclick = () => {
     console.log(`suggestBtn clicked`);
-    // let bestAction = VM.findBestAction(game, 1, currentTurn);
+    // let bestAction = GameCO.findBestAction(game, 1, currentTurn);
     // console.log(Direction.getByDelta([0, 2]));
     // let moveOrBlock = AI.moveOrBlock(game, currentTurn);
     // Log.d("moveOrBlock", moveOrBlock);
 
-    // Log.d(`test`, game.findValidMoves(game.currentTurn));
-    Log.d(`test`, game.lookUpShortestRoute(game.currentTurn, false));
     // let check = AI.lookUpRoutesBetween(game.arena, game.p1, [0, 0], game.p2);
     // let check = AI.lookUpRoutes(game, currentTurn);
     // console.log(`result:`);
