@@ -96,15 +96,15 @@ export class Game {
             }
         }
 
-        return verticalBlocks.concat(horizontalBlocks).filter(block => this.isAvailableToPlaceBlock(block) && !this.isDeadBlock(block));
+        return verticalBlocks.concat(horizontalBlocks).filter(block => this.isValidBlock(block));
         //.filter(block => this.isAvailableToPlaceBlock(block) && !this.isDeadBlock(block));
     }
 
-    isAvailableToPlaceBlock(block) {
+    #isAvailableToPlaceBlock(block) {
         return block.every(part => this.arena[part[1]][part[0]] > 0);
     }
 
-    isDeadBlock(block) {
+    #isDeadBlock(block) {
         // temporaryPlaceBlock(block)
         const tmpGame = this.deepCopy();
         const arena = tmpGame.arena;
@@ -126,6 +126,10 @@ export class Game {
         // console.log(`isDeadBlock: ${isDeadBlock}`);
 
         return isDeadBlock;
+    }
+
+    isValidBlock(block) {
+        return this.#isAvailableToPlaceBlock(block) && !this.#isDeadBlock(block)
     }
 
     placeBlock(block) {
@@ -170,4 +174,45 @@ export class Game {
 
         return null;
     }
+
+    getReachableGoals(turn) {
+        let arena = this.arena;
+        const [player, opponent] = turn == this.currentTurn ? [this.getPlayer(), this.getOpponent()] : [this.getOpponent(), this.getPlayer()];
+        const [px, py] = [player.x, player.y];
+        const [ox, oy] = [opponent.x, opponent.y];
+        const reachableGoals = [];
+        const queue = [];
+        const visited = [];
+
+        queue.push([[px, py], []]);
+        visited.push([px, py]);
+
+        while (queue.length > 0) {
+            const [current, path] = queue.shift();
+            // console.log(current);
+            // console.log(path);
+
+            if (player.goals.some(item => item[0] == current[0] && item[1] == current[1])) { // check reach ends
+                reachableGoals.push(current);
+                visited.push(current); // mark end is visited
+                continue;
+            }
+
+            const validMoves = GameCO.findValidMoves(arena, current, [ox, oy]);
+
+            validMoves.forEach(move => {
+                let isVisited = visited.some(item => item[0] == move[0] && item[1] == move[1]); // check next move is visited
+                if (!isVisited) {
+                    // console.log([current]);
+                    const newPath = path.concat([current]);
+                    // console.log(newPath);
+                    queue.push([move, newPath]);
+                    visited.push(move);
+                }
+            });
+        }
+
+        return reachableGoals;
+    }
+
 }

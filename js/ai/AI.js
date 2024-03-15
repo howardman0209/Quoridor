@@ -1,50 +1,12 @@
 import { GameCO } from '../companionObj/GameCO.js';
 import { ActionType } from '../enum/ActionType.js';
-import { Turn } from '../enum/Turn.js';
 import { Direction } from '../enum/Direction.js';
+import { Log } from '../util/Log.js';
+import { Turn } from '../enum/Turn.js';
 
 export const AI = (() => {
     return {
-        // return all routes to every end
-        // once reach any end will stop and try other path to remaining end(s)
-        lookUpRoutes: function (game, turn) {
-            let arena = game.arena;
-            const [player, opponent, playerEnds] = turn == Turn.P1 ?
-                [game.p1, game.p2, GameCO.getEnds(arena, Turn.P1)] : [game.p2, game.p1, GameCO.getEnds(arena, Turn.P2)];
-            const possiblePaths = [];
-            const queue = [];
-            const visited = [];
-
-            queue.push([player, []]);
-            visited.push(player);
-
-            while (queue.length > 0) {
-                const [current, path] = queue.shift();
-                // console.log(current);
-                // console.log(path);
-
-                if (playerEnds.some(item => item[0] == current[0] && item[1] == current[1])) { // check reach ends
-                    possiblePaths.push(path.concat([current]));
-                    visited.push(current); // mark end is visited
-                    continue;
-                }
-
-                const validMoves = GameCO.findValidMoves(arena, current, opponent);
-
-                validMoves.forEach(move => {
-                    let isVisited = visited.some(item => item[0] == move[0] && item[1] == move[1]); // check next move is visited
-                    if (!isVisited) {
-                        const newPath = path.concat([current]);
-                        // console.log(newPath);
-                        queue.push([move, newPath]);
-                        visited.push(move);
-                    }
-                });
-            }
-
-            return possiblePaths;
-        },
-
+        // return all shortest routes from start to end
         lookUpRoutesBetween: function (arena, start, end, opponent) {
             // console.log(`start: [${start}], end: [${end}], opponent: [${opponent}]`);
             const rows = arena.length;
@@ -105,7 +67,7 @@ export const AI = (() => {
                     }
                 }
             }
-            console.log(steps);
+            // console.log(steps);
             // console.log(visited);
 
             // search steps table to find all routes
@@ -141,71 +103,33 @@ export const AI = (() => {
             return finalResult;
         },
 
-        lookUpShortestRoute: function (game, turn) {
+        moveOrBlock: function (game) {
             const arena = game.arena;
-            const [player, opponent, playerEnds] = turn == Turn.P1 ?
-                [game.p1, game.p2, GameCO.getEnds(arena, Turn.P1)] : [game.p2, game.p1, GameCO.getEnds(arena, Turn.P2)];
+            const [player, opponent] = [game.getPlayer(), game.getOpponent()]
 
-            const queue = [];
-            const visited = [];
-
-            queue.push([player, []]);
-            visited.push(player);
-
-            while (queue.length > 0) {
-                const [current, path] = queue.shift();
-                // console.log(current);
-                // console.log(path);
-
-                if (playerEnds.some(item => item[0] == current[0] && item[1] == current[1])) { // check reach ends
-                    return path.concat([current]); // return path
-                }
-
-                const validMoves = GameCO.findValidMoves(arena, current, opponent);
-
-                validMoves.forEach(move => {
-                    let isVisited = visited.some(item => item[0] == move[0] && item[1] == move[1]); // check next move is visited
-                    if (!isVisited) {
-                        const newPath = path.concat([current]);
-                        // console.log(newPath);
-                        queue.push([move, newPath]);
-                        visited.push(move);
-                    }
-                });
-            }
-
-            return null; // If no path is found
-        },
-
-        moveOrBlock: function (game, turn) {
-            let arena = game.arena;
-            let [player, opponent, playerEnds, opponentEnds] = turn == Turn.P1 ?
-                [game.p1, game.p2, GameCO.getEnds(arena, Turn.P1), GameCO.getEnds(arena, Turn.P2)]
-                : [game.p2, game.p1, GameCO.getEnds(arena, Turn.P2), GameCO.getEnds(arena, Turn.P1)];
-
-            if (!GameCO.isPlayerRemainsBlock(game, turn)) {
+            if (player.remainingBlocks <= 0) {
                 return ActionType.MOVE; // Theorem 1
             }
 
-            let winInNextMove = this.winInNextMove(game, turn);
-            // console.log(`winInNextMove: ${winInNextMove}`)
+            let winInNextMove = this.winInNextMove(game);
+            console.log(`winInNextMove: ${winInNextMove}`)
             if (winInNextMove) {
                 return ActionType.MOVE;  // Theorem 2
             }
 
 
-            let criticalSlots = this.findCriticalSlots(game, turn);
-            console.log(`criticalSlots`);
-            console.log(criticalSlots);
+            let criticalSlots = this.findCriticalSlots(game, game.currentTurn);
+            Log.d(`criticalSlots`, criticalSlots);
 
             return ActionType.MOVE;
         },
 
-        winInNextMove: function (game, turn) {
-            let player = turn == Turn.P1 ? game.p1 : game.p2;
-            let playerShortest = this.lookUpShortestRoute(game, turn);
-            let winInNextMove = playerShortest[playerShortest.length - 2] == player; // win in next move
-            return winInNextMove;
+        winInNextMove: function (game) {
+            const player = game.getPlayer();
+            let playerShortest = game.getShortestRoute(true);
+            let lastSlot = playerShortest[playerShortest.length - 2];
+            // Log.d(`lastSlot`, lastSlot);
+            return lastSlot[0] == player.x && lastSlot[1] == player.y;
         },
 
         getMoveDirection: function (current, next) {
@@ -254,19 +178,15 @@ export const AI = (() => {
             return null;
         },
 
-        getReachableEnds: function (game, turn) {
-            let routes = this.lookUpRoutes(game, turn);
-            return routes.map(route => { return route[route.length - 1] });
-        },
-
         findCriticalSlots: function (game, turn) {
-            const [player, opponent] = turn == Turn.P1 ? [game.p1, game.p2] : [game.p2, game.p1];
+            const [p, o] = [game.getPlayer(), game.getOpponent()];
+            const [start, opponent] = [[p.x, p.y], [o.x, o.y]];
             const criticalSlots = [];
-            const reachableEnds = this.getReachableEnds(game, turn);
+            const reachableEnds = game.getReachableGoals(turn);
             reachableEnds.forEach(end => {
-                const routes = this.lookUpRoutesBetween(game.arena, player, end, opponent);
-                console.log(`from: [${player}] to [${end}], opponent at [${opponent}]`);
-                console.log(routes);
+                const routes = this.lookUpRoutesBetween(game.arena, start, end, opponent);
+                Log.d(`findCriticalSlots`, `from: [${start}] to [${end}], opponent at [${opponent}]`);
+                Log.d(`routes`, routes);
                 routes.forEach(route => {
                     for (let i = route.length - 1; i > 0; i--) {
                         let [current, next] = [route[i - 1], route[i]]
@@ -275,8 +195,8 @@ export const AI = (() => {
                         }
 
                         let blocks = this.getBlocksInBetween(current, next, game.arena.length);
-                        // console.log(blocks);
-                        let validBlocks = blocks.filter(block => GameCO.isAvailableToPlaceBlock(game.arena, block) && !GameCO.isDeadBlock(game, block));
+                        Log.d(`Blocks between [${current}] and [${next}]`, blocks);
+                        let validBlocks = blocks.filter(block => game.isValidBlock(block));
                         // console.log(validBlocks);
                         let canBlock = validBlocks.length != 0;
                         if (canBlock) {

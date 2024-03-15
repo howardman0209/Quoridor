@@ -1,8 +1,9 @@
 import { GameCO } from './companionObj/GameCO.js';
 import { Turn } from './enum/Turn.js';
 import { AI } from './ai/AI.js';
-import { Direction } from './enum/Direction.js';
 import { Log } from '../js/util/Log.js';
+import { Direction } from './enum/Direction.js';
+
 // variable 
 const gameSize = 5;
 let selectedMove = [];
@@ -147,7 +148,7 @@ function clearAllOption(arena) {
 }
 
 function selectMove(selected) {
-    console.log(selected);
+    // console.log(selected);
     selectedMove = selected;
     const selectedSlot = document.getElementById(`c${selected[0]}r${selected[1]}`);
     selectedSlot.classList.add("selected");
@@ -307,11 +308,10 @@ suggestBtn.onclick = () => {
     console.log(`suggestBtn clicked`);
     // let bestAction = GameCO.findBestAction(game, 1, currentTurn);
     // console.log(Direction.getByDelta([0, 2]));
-    // let moveOrBlock = AI.moveOrBlock(game, currentTurn);
-    // Log.d("moveOrBlock", moveOrBlock);
+    let moveOrBlock = AI.moveOrBlock(game);
+    Log.d("moveOrBlock", moveOrBlock);
 
-    // let check = AI.lookUpRoutesBetween(game.arena, game.p1, [0, 0], game.p2);
-    // let check = AI.lookUpRoutes(game, currentTurn);
-    // console.log(`result:`);
+    // let check = AI.lookUpRoutesBetween(game.arena, [game.p1.x, game.p1.y], [0, 0], [game.p2.x, game.p2.y]);
+    // Log.d("check", check);
     // console.log(JSON.stringify(check));
 }
