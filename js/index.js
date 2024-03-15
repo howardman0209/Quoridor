@@ -5,7 +5,7 @@ import { Log } from '../js/util/Log.js';
 import { Direction } from './enum/Direction.js';
 
 // variable 
-const gameSize = 5;
+const gameSize = 9;
 let selectedMove = [];
 let selectedBlock = [];
 
@@ -35,8 +35,8 @@ function render(game) {
     const p1Slot = document.getElementById(`c${game.p1.x}r${game.p1.y}`);
     const p2Slot = document.getElementById(`c${game.p2.x}r${game.p2.y}`);
 
-    p1Slot.innerHTML += `<em id="pawn">P1</em>`;
-    p2Slot.innerHTML += `<em id="pawn">P2</em>`;
+    p1Slot.innerHTML += getPawn(Turn.P1);
+    p2Slot.innerHTML += getPawn(Turn.P2);
 }
 
 function nextTurn() {
@@ -192,7 +192,7 @@ function clearSelection() {
 
 function updateTurnLabel() {
     const turnLabel = document.getElementById("turnLabel");
-    turnLabel.innerText = `Turn: ${game.currentTurn}`;
+    turnLabel.innerHTML = `<div class="flex"><p class="with-pawn">Turn: ${game.currentTurn}</p>${getPawn(game.currentTurn)}`;
 }
 
 function setWinnerLabel() {
@@ -201,8 +201,8 @@ function setWinnerLabel() {
 }
 
 function updateBlocksRemain() {
-    const blocksRemain = document.getElementById("blocksRemain");
-    blocksRemain.innerHTML = `<em class="blockStorage">${Turn.P1}: block x${game.p1.remainingBlocks}</em>\n <em class="blockStorage">${Turn.P2}: block x${game.p2.remainingBlocks}</em>`;
+    const blocksRemain = document.getElementById("blockLabel");
+    blocksRemain.innerHTML = `${getBlock(Turn.P1)}<p class="blockStorage with-pawn">${Turn.P1}: block x${game.p1.remainingBlocks}</p>${getBlock(Turn.P2)}<p class="blockStorage with-pawn">${Turn.P2}: block x${game.p2.remainingBlocks}</p>`;
     if (game.getPlayer().remainingBlocks > 0) {
         const blockBtn = document.getElementById("blockBtn");
         blockBtn.disabled = false;
@@ -210,6 +210,16 @@ function updateBlocksRemain() {
         const blockBtn = document.getElementById("blockBtn");
         blockBtn.disabled = true;
     }
+}
+
+function getPawn(turn) {
+    const colorRGB = turn == Turn.P1 ? rgb(90, 90, 200) : rgb(168, 138, 41)
+    return `<span class="pawn" style="background-color:${colorRGB};"></span>`
+}
+
+function getBlock(turn){
+    const colorRGB = turn == Turn.P1 ? rgb(90, 90, 200) : rgb(168, 138, 41)
+    return `<span class="block" style="background-color:${colorRGB};"></span>`
 }
 
 

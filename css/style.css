@@ -3,13 +3,45 @@ html {
     color: rgb(169, 169, 169);
 }
 
-th,
-td {
-    border: 1px solid;
+table {
+    border-spacing: 0px;
 }
 
-#pawn {
-    color: gold;
+p{
+    font-size: 18px;
+    font-weight: 700;
+}
+
+p.with-pawn {
+    /* background-color: brown; */
+    margin: 0px;
+    padding-right: 16px;
+    align-self: flex-end;
+}
+
+th,
+td {
+    border: 0px none;
+    border-spacing: 0px;
+}
+
+textarea {
+    padding: 6px 12px;
+    background: rgb(31, 32, 35);
+    border: 1px solid rgb(60, 63, 68);
+    border-radius: 4px;
+    font-size: 13px;
+    color: rgb(247, 248, 248);
+    height: 46px;
+    appearance: none;
+    transition: border 0.15s ease 0s;
+    resize: none;
+}
+
+textarea:focus {
+    outline: none;
+    box-shadow: none;
+    border-color: rgb(100, 153, 255);
 }
 
 .borderBlock {
@@ -19,6 +51,7 @@ td {
 }
 
 .platformBlock {
+    background-color: rgb(50, 50, 50);
     min-width: 40px;
     max-height: 40px;
     height: 40px;
@@ -30,7 +63,7 @@ td {
 }
 
 .option {
-    background-color: rgb(136, 211, 212);
+    background-color: rgb(97, 152, 153);
 }
 
 .option:hover {
@@ -41,34 +74,115 @@ td {
     background-color: rgb(136, 212, 142);
 }
 
+.blockStorage {
+    margin: 0px;
+    flex: auto;
+}
+
+.pawn {
+    background-color: rgb(51, 51, 138);
+    height: 25px;
+    width: 25px;
+    border-radius: 50%;
+    vertical-align: bottom;
+    display: inline-block;
+}
+
+.block {
+    height: 30px;
+    width: 5px;
+    background-color: #ffffff;
+    transform: rotate(20deg);
+    vertical-align: bottom;
+    display: inline-block;
+}
+
+.pawnP1 {
+    background-color: rgb(90, 90, 200);
+    height: 25px;
+    width: 25px;
+    border-radius: 50%;
+    display: hidden;
+}
+
+.pawnP2 {
+    background-color: rgb(168, 138, 41);
+    height: 25px;
+    width: 25px;
+    border-radius: 50%;
+    display: hidden;
+}
+
+.flex {
+    display: flex;
+}
+
+button {
+    width: auto;
+    min-height: 20px;
+    display: inline-block;
+    outline: 0;
+    border: 0;
+    cursor: pointer;
+    border-radius: 8px;
+    padding: 10px 10px 10px;
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1;
+    transition: transform 200ms, background 200ms;
+    background: white;
+    color: #000000;
+    box-shadow: 0 0 0 3px #000000 inset;
+}
+
+button:hover {
+    transform: translateY(-2px);
+}
+
+#actions {
+    /* background-color: blue; */
+    padding: 0px;
+}
+
 #board {
     position: relative;
     margin: 10px;
 }
 
 #turnLabel {
+    margin-bottom: 10px;
+    /* background-color: aqua; */
     display: inline-block;
 }
 
 #winnerLabel {
+    margin: 0px;
     display: inline-block;
 }
 
-#blocksRemain {
-    margin-Right: 20px;
-    display: inline-block;
-}
-
-.blockStorage {
+#blockLabel {
+    /* margin-Right: 20px; */
+    width: 100%;
+    margin: 5px;
+    /* background-color: blue; */
     display: flex;
-    /* color: rgb(202, 168, 102); */
 }
 
 #container {
+    /* background-color: rgb(255, 0, 0); */
+    max-width: fit-content;
+    min-width: fit-content;
     padding: 10px;
 }
 
-button {
-    width: auto;
-    min-height: 20px;
+#confirmBtn {
+    /* margin-right: 80%; */
+    margin-inline: 10px;
+    margin-bottom: 10px;
+    flex: auto;
+    min-height: 30px;
+}
+
+#gameStateIO {
+    flex: auto;
 }

@@ -12,7 +12,8 @@
 
 <body>
     <div id="container">
-        <p id="blocksRemain">blocksRemain</p>
+        <span class="pawnP1"></span>
+        <span class="pawnP2"></span>
         <p id="turnLabel">turnLabel</p>
         <p id="winnerLabel"></p>
         <div id="actions">
@@ -20,10 +21,15 @@
             <button id="moveBtn">Move</button>
             <button id="suggestBtn">Suggest</button>
         </div>
-        <button id="saveLoadBtn">Save / Load</button>
-        <input id="gameStateIO" type="text">
+        <p id="blockLabel">blocksRemain</p>
         <div id="board"></div>
-        <button id="confirmBtn">Confirm</button>
+        <div class="flex">
+            <button id="confirmBtn">Confirm</button>
+        </div>
+        <div class="flex">
+            <button id="saveLoadBtn">Save / Load</button>
+            <textarea id="gameStateIO" type="text"></textarea>
+        </div>
     </div>
 </body>
 
