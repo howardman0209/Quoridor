@@ -295,7 +295,7 @@ saveLoadBtn.onclick = () => {
         try {
             data = JSON.parse(gameStateIO.value)
             game.loadData(data);
-            render(game);
+            nextTurn();
         } catch (error) {
             alert(error);
         }
