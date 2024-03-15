@@ -5,7 +5,7 @@ import { Log } from '../js/util/Log.js';
 import { Direction } from './enum/Direction.js';
 
 // variable 
-const gameSize = 9;
+const gameSize = 7;
 let selectedMove = [];
 let selectedBlock = [];
 

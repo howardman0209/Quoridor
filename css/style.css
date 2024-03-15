@@ -4,10 +4,12 @@ html {
 }
 
 table {
+    table-layout: fixed;
     border-spacing: 0px;
+    border-collapse: collapse;
 }
 
-p{
+p {
     font-size: 18px;
     font-weight: 700;
 }
@@ -84,7 +86,7 @@ textarea:focus {
     height: 25px;
     width: 25px;
     border-radius: 50%;
-    vertical-align: bottom;
+    vertical-align: middle;
     display: inline-block;
 }
 
@@ -137,6 +139,11 @@ button {
 
 button:hover {
     transform: translateY(-2px);
+}
+
+button:disabled {
+    pointer-events: none;
+    background: grey;
 }
 
 #actions {
