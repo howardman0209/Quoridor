@@ -145,8 +145,7 @@ export class Game {
     }
 
     applyMove(move) {
-        this.player.x = move[0];
-        this.player.y = move[1];
+        this.player.moveTo(...move);
         this.#goToNextTurn();
     }
 

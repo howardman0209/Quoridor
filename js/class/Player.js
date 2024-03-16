@@ -14,4 +14,8 @@ export class Player {
     #getGoalLine(turn, arenaSize) {
         return turn == Turn.P1 ? 0 : arenaSize * 2 - 2;
     }
+
+    moveTo(x, y) {
+        [this.x, this.y] = [x, y];
+    }
 }
