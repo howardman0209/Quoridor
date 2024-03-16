@@ -5,7 +5,13 @@ export const Direction = (() => {
         LEFT: { label: 'LEFT', delta: [-2, 0] },
         RIGHT: { label: 'RIGHT', delta: [2, 0] },
     };
+
     return {
+        UP: directions.UP,
+        DOWN: directions.DOWN,
+        LEFT: directions.LEFT,
+        RIGHT: directions.RIGHT,
+
         getByDelta: function (delta) {
             // console.log(`input: ${delta}`)
             for (const [key, value] of Object.entries(directions)) {

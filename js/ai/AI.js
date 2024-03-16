@@ -105,7 +105,7 @@ export const AI = (() => {
 
         moveOrBlock: function (game) {
             const arena = game.arena;
-            const [player, opponent] = [game.getPlayer(), game.getOpponent()]
+            const [player, opponent] = [game.player, game.opponent]
 
             if (player.remainingBlocks <= 0) {
                 return ActionType.MOVE; // Theorem 1
@@ -125,7 +125,7 @@ export const AI = (() => {
         },
 
         winInNextMove: function (game) {
-            const player = game.getPlayer();
+            const player = game.player;
             let playerShortest = game.getShortestRoute(true);
             let lastSlot = playerShortest[playerShortest.length - 2];
             // Log.d(`lastSlot`, lastSlot);
@@ -179,14 +179,15 @@ export const AI = (() => {
         },
 
         findCriticalSlots: function (game, turn) {
-            const [p, o] = [game.getPlayer(), game.getOpponent()];
+            const [p, o] = [game.player, game.opponent];
             const [start, opponent] = [[p.x, p.y], [o.x, o.y]];
             const criticalSlots = [];
-            const reachableEnds = game.getReachableGoals(turn);
-            reachableEnds.forEach(end => {
+            const reachableGoals = game.getReachableGoals(turn);
+            // Log.d(`reachableGoals`, reachableGoals);
+            reachableGoals.forEach(end => {
                 const routes = this.lookUpRoutesBetween(game.arena, start, end, opponent);
-                Log.d(`findCriticalSlots`, `from: [${start}] to [${end}], opponent at [${opponent}]`);
-                Log.d(`routes`, routes);
+                // Log.d(`findCriticalSlots`, `from: [${start}] to [${end}], opponent at [${opponent}]`);
+                // Log.d(`routes`, routes);
                 routes.forEach(route => {
                     for (let i = route.length - 1; i > 0; i--) {
                         let [current, next] = [route[i - 1], route[i]]
@@ -195,7 +196,7 @@ export const AI = (() => {
                         }
 
                         let blocks = this.getBlocksInBetween(current, next, game.arena.length);
-                        Log.d(`Blocks between [${current}] and [${next}]`, blocks);
+                        // Log.d(`Blocks between [${current}] and [${next}]`, blocks);
                         let validBlocks = blocks.filter(block => game.isValidBlock(block));
                         // console.log(validBlocks);
                         let canBlock = validBlocks.length != 0;

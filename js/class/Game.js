@@ -5,11 +5,12 @@ import { Player } from './Player.js';
 import { GameHelper } from '../globalObject/GameHelper.js';
 
 export class Game {
-    constructor(arenaSize, initialTurn) {
+    constructor(arenaSize, playerOrder) {
         this.arena = this.#initArena(arenaSize);
         this.p1 = this.#initPlayer(arenaSize, Turn.P1);
         this.p2 = this.#initPlayer(arenaSize, Turn.P2);
-        this.currentTurn = initialTurn;
+        this.playerOrder = playerOrder;
+        this.numOfTurn = 1;
     }
 
     #initArena(size) {
@@ -40,28 +41,33 @@ export class Game {
         this.arena = game.arena;
         this.p1 = game.p1;
         this.p2 = game.p2;
-        this.currentTurn = game.currentTurn;
+        this.playerOrder = game.playerOrder;
+        this.numOfTurn = game.numOfTurn;
     }
 
-    getPlayer() {
+    get player() {
         return this.currentTurn == Turn.P1 ? this.p1 : this.p2;
     }
 
-    getOpponent() {
+    get opponent() {
         return this.currentTurn == Turn.P1 ? this.p2 : this.p1;
     }
 
-    getNextTurn() {
-        return this.currentTurn == Turn.P1 ? Turn.P2 : Turn.P1;
+    get currentTurn() {
+        return this.playerOrder[this.numOfTurn % 2];
+    }
+
+    get nextTurn() {
+        return this.playerOrder[(this.numOfTurn + 1) % 2];
     }
 
     #goToNextTurn() {
-        this.currentTurn = this.getNextTurn();
+        this.numOfTurn++;
     }
 
     getValidMoves(considerOpponent) {
-        const player = [this.getPlayer().x, this.getPlayer().y];
-        const opponent = considerOpponent ? [this.getOpponent().x, this.getOpponent().y] : undefined;
+        const player = [this.player.x, this.player.y];
+        const opponent = considerOpponent ? [this.opponent.x, this.opponent.y] : undefined;
         return GameHelper.findValidMoves(this.arena, player, opponent);
     }
 
@@ -110,12 +116,12 @@ export class Game {
 
         // console.log(arena);
         // check player
-        const player = this.getPlayer();
-        let playerShortestRoute = GameHelper.lookUpShortestRoute(arena, [player.x, player.y], player.goals);
+        const player = this.player;
+        let playerShortestRoute = GameHelper.lookUpShortestRoute(arena, [player.x, player.y], player.goalLine);
 
         // check opponent
-        const opponent = this.getOpponent();
-        let opponentShortestRoute = GameHelper.lookUpShortestRoute(arena, [opponent.x, opponent.y], opponent.goals);
+        const opponent = this.opponent;
+        let opponentShortestRoute = GameHelper.lookUpShortestRoute(arena, [opponent.x, opponent.y], opponent.goalLine);
 
         // check player & opponent whether has no valid route
         let isDeadBlock = playerShortestRoute == null || opponentShortestRoute == null;
@@ -133,39 +139,41 @@ export class Game {
             this.arena[element[1]][element[0]] = this.currentTurn == Turn.P1 ? -1 : -2;
         });
 
-        const player = this.getPlayer();
+        const player = this.player;
         player.remainingBlocks--;
         this.#goToNextTurn();
     }
 
     applyMove(move) {
-        this.getPlayer().x = move[0];
-        this.getPlayer().y = move[1];
+        this.player.x = move[0];
+        this.player.y = move[1];
         this.#goToNextTurn();
     }
 
     getShortestRoute(considerOpponent) {
-        const player = this.getPlayer();
-        const [start, ends] = [[player.x, player.y], player.goals];
-        const opponent = considerOpponent ? [this.getOpponent().x, this.getOpponent().y] : undefined;
-        return GameHelper.lookUpShortestRoute(this.arena, start, ends, opponent)
+        const player = this.player;
+        const start = [player.x, player.y];
+        const opponent = considerOpponent ? [this.opponent.x, this.opponent.y] : undefined;
+        return GameHelper.lookUpShortestRoute(this.arena, start, player.goalLine, opponent)
     }
 
     checkWinner() {
         // check player
-        const player = this.getPlayer();
-        let playerShortestRoute = GameHelper.lookUpShortestRoute(this.arena, [player.x, player.y], player.goals);
+        const player = this.player;
+        let playerShortestRoute = GameHelper.lookUpShortestRoute(this.arena, [player.x, player.y], player.goalLine);
+        // Log.d(`checkWinner, player`, player.goalLine);
 
         // check opponent
-        const opponent = this.getOpponent();
-        let opponentShortestRoute = GameHelper.lookUpShortestRoute(this.arena, [opponent.x, opponent.y], opponent.goals);
+        const opponent = this.opponent;
+        let opponentShortestRoute = GameHelper.lookUpShortestRoute(this.arena, [opponent.x, opponent.y], opponent.goalLine);
+        // Log.d(`checkWinner, opponent`, opponent.goalLine);
 
         if (playerShortestRoute.length - 1 == 0) {
             return this.currentTurn;
         }
 
         if (opponentShortestRoute.length - 1 == 0) {
-            return this.getNextTurn();
+            return this.nextTurn;
         }
 
         return null;
@@ -173,7 +181,7 @@ export class Game {
 
     getReachableGoals(turn) {
         let arena = this.arena;
-        const [player, opponent] = turn == this.currentTurn ? [this.getPlayer(), this.getOpponent()] : [this.getOpponent(), this.getPlayer()];
+        const [player, opponent] = turn == this.currentTurn ? [this.player, this.opponent] : [this.opponent, this.player];
         const [px, py] = [player.x, player.y];
         const [ox, oy] = [opponent.x, opponent.y];
         const reachableGoals = [];
@@ -188,7 +196,7 @@ export class Game {
             // console.log(current);
             // console.log(path);
 
-            if (player.goals.some(item => item[0] == current[0] && item[1] == current[1])) { // check reach ends
+            if (current[1] == player.goalLine) { // check reach ends
                 reachableGoals.push(current);
                 visited.push(current); // mark end is visited
                 continue;
@@ -208,7 +216,7 @@ export class Game {
             });
         }
 
-        return reachableGoals;
+        return reachableGoals.sort((a, b) => a[0] - b[0]);
     }
 
 }

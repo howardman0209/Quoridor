@@ -6,11 +6,13 @@ import { ActionType } from '../enum/ActionType.js';
 export const GameHelper = (() => {
     return {
         initGame: function (size) {
-            let game = new Game(size, Turn.P1);
+            // inital numOfTurn = 1, playerOrder[numOfTurn%2]
+            // if order = [Turn.P2, Turn.P1] => P1 will be the first player
+            let game = new Game(size, [Turn.P2, Turn.P1]);
             return game;
         },
 
-        lookUpShortestRoute: function (arena, start, ends, opponent) {
+        lookUpShortestRoute: function (arena, start, goalLine, opponent) {
             const queue = [];
             const visited = [];
 
@@ -22,7 +24,7 @@ export const GameHelper = (() => {
                 // console.log(current);
                 // console.log(path);
 
-                if (ends.some(item => item[0] == current[0] && item[1] == current[1])) { // check reach ends
+                if (current[1] == goalLine) { // check reach ends
                     return path.concat([current]); // return path
                 }
 

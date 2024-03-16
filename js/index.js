@@ -195,7 +195,7 @@ function clearSelection() {
 
 function updateTurnLabel() {
     const turnLabel = document.getElementById("turnLabel");
-    turnLabel.innerHTML = `<div class="flex"><p class="with-pawn">Turn: ${game.currentTurn}</p>${getPawn(game.currentTurn)}`;
+    turnLabel.innerHTML = `<div class="flex"><p class="with-pawn">Turn ${game.numOfTurn} - ${game.currentTurn}</p>${getPawn(game.currentTurn)}`;
 }
 
 function setWinnerLabel() {
@@ -206,7 +206,7 @@ function setWinnerLabel() {
 function updateBlocksRemain() {
     const blocksRemain = document.getElementById("blockLabel");
     blocksRemain.innerHTML = `${getBlock(Turn.P1)}<p class="blockStorage with-pawn">${Turn.P1}: block x${game.p1.remainingBlocks}</p>${getBlock(Turn.P2)}<p class="blockStorage with-pawn">${Turn.P2}: block x${game.p2.remainingBlocks}</p>`;
-    if (game.getPlayer().remainingBlocks > 0) {
+    if (game.player.remainingBlocks > 0) {
         const blockBtn = document.getElementById("blockBtn");
         blockBtn.disabled = false;
     } else {
@@ -282,7 +282,7 @@ confirmBtn.onclick = () => {
         console.log(`${game.currentTurn} Block`);
         Log.d(`BLOCK`, selectedBlock);
 
-        let isPlayerRemainsBlock = game.getPlayer().remainingBlocks > 0;
+        let isPlayerRemainsBlock = game.player.remainingBlocks > 0;
         if (!isPlayerRemainsBlock) {
             console.log(`No block remains`);
             clearSelectedBlock();
@@ -323,6 +323,7 @@ suggestBtn.onclick = () => {
     // console.log(Direction.getByDelta([0, 2]));
     let moveOrBlock = AI.moveOrBlock(game);
     Log.d("moveOrBlock", moveOrBlock);
+
 
     // let check = AI.lookUpRoutesBetween(game.arena, [game.p1.x, game.p1.y], [0, 0], [game.p2.x, game.p2.y]);
     // Log.d("check", check);
