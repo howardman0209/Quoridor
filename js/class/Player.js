@@ -1,3 +1,4 @@
+"use strict";
 import { Turn } from '../enum/Turn.js';
 
 export class Player {

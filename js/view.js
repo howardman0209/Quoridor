@@ -1,8 +1,12 @@
+"use strict";
 import { GameHelper } from './globalObject/GameHelper.js';
 import { Turn } from './enum/Turn.js';
 import { AI } from './ai/AI.js';
-import { Log } from '../js/util/Log.js';
+import { Log } from './util/Log.js';
+import { GameTracker } from './class/GameTracker.js';
 import { Direction } from './enum/Direction.js';
+import { Action } from './dataClass/Action.js';
+import { ActionType } from './enum/ActionType.js';
 
 // variable 
 const gameSize = 9;
@@ -10,11 +14,11 @@ let selectedMove = [];
 let selectedBlock = [];
 
 // Functions
-function render(game) {
+function drawBoard() {
     const board = document.getElementById("board");
     const arena = game.arena;
 
-    // render arena
+    // draw arena
     let tableContent = "";
     for (let row = 0; row < arena.length; row++) {
         tableContent += "<tr>";
@@ -34,7 +38,7 @@ function render(game) {
     }
     board.innerHTML = `<table>${tableContent}</table>`;
 
-    // render p1, p2
+    // draw p1, p2
     const p1Slot = document.getElementById(`c${game.p1.x}r${game.p1.y}`);
     const p2Slot = document.getElementById(`c${game.p2.x}r${game.p2.y}`);
 
@@ -42,9 +46,9 @@ function render(game) {
     p2Slot.innerHTML += getPawn(Turn.P2);
 }
 
-function nextTurn() {
+function renderPage() {
     clearSelection();
-    render(game);
+    drawBoard();
     let winner = game.checkWinner();
     // console.log(`winner: ${winner}`);
     if (winner != null) { // check game is end
@@ -53,17 +57,21 @@ function nextTurn() {
     } else {
         updateBlocksRemain();
         updateTurnLabel();
+        updateTrackingBtn();
     }
 }
 
-function endGame() {
-    const blockBtn = document.getElementById("blockBtn");
-    const moveBtn = document.getElementById("moveBtn");
-    const confirmBtn = document.getElementById("confirmBtn");
+function updateTrackingBtn() {
+    previousBtn.disabled = gameTracker.cursor == -1;
+    nextBtn.disabled = gameTracker.cursor == gameTracker.actions.length - 1;
+}
 
+function endGame() {
     blockBtn.disabled = true;
     moveBtn.disabled = true;
     confirmBtn.disabled = true;
+    previousBtn.disabled = true;
+    nextBtn.disabled = true;
 }
 
 function showMoveOptions(validMoves) {
@@ -228,9 +236,10 @@ function getBlock(turn) {
 
 // OnCreate
 const game = GameHelper.initGame(gameSize);
+const gameTracker = new GameTracker(game);
 // const clone = game.deepCopy()
 // console.log(game);
-render(game);
+drawBoard();
 updateTurnLabel();
 updateBlocksRemain();
 //[[2, 1], [3, 1], [4, 1]]
@@ -272,10 +281,12 @@ confirmBtn.onclick = () => {
         return
     }
 
+    let action = null;
+
     if (isMove) {
         console.log(`${game.currentTurn} Move`);
         Log.d(`MOVE`, selectedMove);
-        game.applyMove(selectedMove);
+        action = new Action([[game.player.x, game.player.y], selectedMove], ActionType.MOVE)
     }
 
     if (isBlock) {
@@ -289,11 +300,11 @@ confirmBtn.onclick = () => {
             alert("No block remains.");
             return
         }
-
-        game.placeBlock(selectedBlock);
+        action = new Action(selectedBlock, ActionType.BLOCK)
     }
-
-    nextTurn();
+    gameTracker.record(action);
+    game.doAction(action);
+    renderPage();
 }
 
 const saveLoadBtn = document.getElementById("saveLoadBtn");
@@ -308,11 +319,32 @@ saveLoadBtn.onclick = () => {
         try {
             data = JSON.parse(gameStateIO.value)
             game.loadData(data);
-            nextTurn();
+            gameTracker.clear();
+            renderPage();
         } catch (error) {
             alert(error);
         }
         gameStateIO.value = "";
+    }
+}
+
+const previousBtn = document.getElementById("previousBtn");
+previousBtn.disabled = true;
+previousBtn.onclick = () => {
+    const action = gameTracker.previous();
+    if (action != undefined) {
+        game.undoAction(action);
+        renderPage();
+    }
+}
+
+const nextBtn = document.getElementById("nextBtn");
+nextBtn.disabled = true;
+nextBtn.onclick = () => {
+    const action = gameTracker.next();
+    if (action != undefined) {
+        game.doAction(action);
+        renderPage();
     }
 }
 

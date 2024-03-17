@@ -1,3 +1,4 @@
+"use strict";
 import { GameHelper } from '../globalObject/GameHelper.js';
 import { ActionType } from '../enum/ActionType.js';
 import { Direction } from '../enum/Direction.js';

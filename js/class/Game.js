@@ -1,8 +1,9 @@
-// Data Class
+"use strict";
 import { Log } from '../util/Log.js';
 import { Turn } from '../enum/Turn.js';
 import { Player } from './Player.js';
 import { GameHelper } from '../globalObject/GameHelper.js';
+import { ActionType } from '../enum/ActionType.js';
 
 export class Game {
     constructor(arenaSize, playerOrder) {
@@ -32,17 +33,24 @@ export class Game {
 
     deepCopy() {
         const cloneData = JSON.parse(JSON.stringify(this));
-        const newGame = new Game(0, 0, 0, Turn.P1);
-        newGame.loadData(cloneData);
+        const p1 = Object.assign(new Player, cloneData.p1);
+        const p2 = Object.assign(new Player, cloneData.p2);
+        const newGame = Object.assign(new Game, cloneData);
+        newGame.p1 = p1;
+        newGame.p2 = p2;
+        // newGame.loadData(cloneData);
         return newGame;
     }
 
-    loadData(game) {
-        this.arena = game.arena;
-        this.p1 = game.p1;
-        this.p2 = game.p2;
-        this.playerOrder = game.playerOrder;
-        this.numOfTurn = game.numOfTurn;
+    loadData(gameMeta) {
+        const p1 = Object.assign(new Player, gameMeta.p1);
+        const p2 = Object.assign(new Player, gameMeta.p2);
+        const tmpGame = Object.assign(new Game, gameMeta);
+        this.arena = tmpGame.arena;
+        this.playerOrder = tmpGame.playerOrder;
+        this.numOfTurn = tmpGame.numOfTurn;
+        this.p1 = p1;
+        this.p2 = p2;
     }
 
     get player() {
@@ -63,6 +71,10 @@ export class Game {
 
     #goToNextTurn() {
         this.numOfTurn++;
+    }
+
+    #backToPreviousTurn() {
+        this.numOfTurn--;
     }
 
     getValidMoves(considerOpponent) {
@@ -112,7 +124,7 @@ export class Game {
         const arena = tmpGame.arena;
 
         // place block
-        tmpGame.placeBlock(block);
+        tmpGame.#placeBlock(block);
 
         // console.log(arena);
         // check player
@@ -134,19 +146,40 @@ export class Game {
         return this.#isAvailableToPlaceBlock(block) && !this.#isDeadBlock(block)
     }
 
-    placeBlock(block) {
+    #placeBlock(block) {
         block.forEach(element => {
             this.arena[element[1]][element[0]] = this.currentTurn == Turn.P1 ? -1 : -2;
         });
+    }
 
-        const player = this.player;
-        player.remainingBlocks--;
+    #removeBlock(block) {
+        block.forEach(element => {
+            this.arena[element[1]][element[0]] = 1;
+        });
+    }
+
+    doAction(action) {
+        if (action.type == ActionType.MOVE) {
+            const [original, move] = action.data;
+            this.player.moveTo(...move);
+        } else if (action.type == ActionType.BLOCK) {
+            const block = action.data;
+            this.#placeBlock(block);
+            this.player.remainingBlocks--;
+        }
         this.#goToNextTurn();
     }
 
-    applyMove(move) {
-        this.player.moveTo(...move);
-        this.#goToNextTurn();
+    undoAction(action) {
+        if (action.type == ActionType.MOVE) {
+            const [original, move] = action.data;
+            this.opponent.moveTo(...original);
+        } else if (action.type == ActionType.BLOCK) {
+            const block = action.data;
+            this.#removeBlock(block);
+            this.opponent.remainingBlocks++;
+        }
+        this.#backToPreviousTurn()
     }
 
     getShortestRoute(considerOpponent) {
