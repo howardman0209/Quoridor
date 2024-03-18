@@ -14,6 +14,14 @@ export class Game {
         this.numOfTurn = 1;
     }
 
+    restart() {
+        const arenaSize = (this.arena.length + 1) / 2;
+        this.arena = this.#initArena(arenaSize);
+        this.p1 = this.#initPlayer(arenaSize, Turn.P1);
+        this.p2 = this.#initPlayer(arenaSize, Turn.P2);
+        this.numOfTurn = 1;
+    }
+
     #initArena(size) {
         // Log.d(`Game`, `initArena`);
         const arena = Array.from({ length: size * 2 - 1 }, (_, rowIndex) =>
@@ -43,6 +51,14 @@ export class Game {
     }
 
     loadData(gameMeta) {
+        const assertDataList = Object.keys(this);
+        assertDataList.forEach(key => {
+            if (!Object.keys(gameMeta).includes(key)) { // Assertion fail
+                // console.log(`missing data`);
+                throw new Error(`Missing required game data`);
+            }
+        });
+
         const p1 = Object.assign(new Player, gameMeta.p1);
         const p2 = Object.assign(new Player, gameMeta.p2);
         const tmpGame = Object.assign(new Game, gameMeta);

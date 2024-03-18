@@ -62,8 +62,8 @@ function renderPage() {
 }
 
 function updateTrackingBtn() {
-    previousBtn.disabled = gameTracker.cursor == -1;
-    nextBtn.disabled = gameTracker.cursor == gameTracker.actions.length - 1;
+    previousBtn.disabled = !gameTracker.hasPrevious();
+    nextBtn.disabled = !gameTracker.hasNext();
 }
 
 function endGame() {
@@ -309,22 +309,41 @@ confirmBtn.onclick = () => {
 
 const saveLoadBtn = document.getElementById("saveLoadBtn");
 saveLoadBtn.onclick = () => {
-    const gameStateIO = document.getElementById("gameStateIO");
-    if (gameStateIO.value == "") {
+    const dataIO = document.getElementById("dataIO");
+    if (dataIO.value == "") {
         // console.log(`save Btn clicked`);
-        gameStateIO.value = JSON.stringify(game);
+        dataIO.value = JSON.stringify(game);
     } else {
         // console.log(`Load Btn clicked`);
-        let data = null;
         try {
-            data = JSON.parse(gameStateIO.value)
+            let data = JSON.parse(dataIO.value)
             game.loadData(data);
             gameTracker.clear();
             renderPage();
         } catch (error) {
             alert(error);
         }
-        gameStateIO.value = "";
+        dataIO.value = "";
+    }
+}
+
+const recordPlayBtn = document.getElementById("recordPlayBtn");
+recordPlayBtn.onclick = () => {
+    const dataIO = document.getElementById("dataIO");
+    if (dataIO.value == "") {
+        // console.log(`record Btn clicked`);
+        dataIO.value = JSON.stringify(gameTracker.exportRecord());
+    } else {
+        // console.log(`play Btn clicked`);
+        try {
+            let data = JSON.parse(dataIO.value)
+            gameTracker.importRecord(data);
+            game.restart();
+            renderPage();
+        } catch (error) {
+            alert(error);
+        }
+        dataIO.value = "";
     }
 }
 
