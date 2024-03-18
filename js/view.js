@@ -353,8 +353,8 @@ suggestBtn.onclick = () => {
     console.log(`suggestBtn clicked`);
     // let bestAction = GameHelper.findBestAction(game, 1, currentTurn);
     // console.log(Direction.getByDelta([0, 2]));
-    let moveOrBlock = AI.moveOrBlock(game);
-    Log.d("moveOrBlock", moveOrBlock);
+    let simulation = AI.simulation(game);
+    Log.d("simulation", simulation);
 
 
     // let check = AI.lookUpRoutesBetween(game.arena, [game.p1.x, game.p1.y], [0, 0], [game.p2.x, game.p2.y]);

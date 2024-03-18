@@ -3,7 +3,9 @@ import { GameHelper } from '../globalObject/GameHelper.js';
 import { ActionType } from '../enum/ActionType.js';
 import { Direction } from '../enum/Direction.js';
 import { Log } from '../util/Log.js';
+import { MathUtil } from '../util/MathUtil.js';
 import { Turn } from '../enum/Turn.js';
+import { Action } from '../dataClass/Action.js';
 
 export const AI = (() => {
     return {
@@ -113,16 +115,16 @@ export const AI = (() => {
             }
 
             let winInNextMove = this.winInNextMove(game);
-            console.log(`winInNextMove: ${winInNextMove}`)
+            // console.log(`winInNextMove: ${winInNextMove}`)
             if (winInNextMove) {
                 return ActionType.MOVE;  // Theorem 2
             }
 
 
-            let criticalSlots = this.findCriticalSlots(game, game.currentTurn);
-            Log.d(`criticalSlots`, criticalSlots);
-
-            return ActionType.MOVE;
+            // let criticalSlots = this.findCriticalSlots(game, game.currentTurn);
+            // Log.d(`criticalSlots`, criticalSlots);
+            const moveOrBlock = MathUtil.getRandomInt(2) == 0 ? ActionType.MOVE : ActionType.BLOCK;
+            return moveOrBlock;
         },
 
         winInNextMove: function (game) {
@@ -238,6 +240,44 @@ export const AI = (() => {
 
         isInTube: function () {
 
+        },
+
+        simulation: function (game) {
+            const simulationGame = game.deepCopy();
+
+            while (simulationGame.checkWinner() == null) {
+                // state 1: choose move or block
+                const moveOrBlock = this.moveOrBlock(simulationGame);
+                // Log.d(`AI, moveOrBlock`, moveOrBlock);
+
+                // state 2: select move / block options
+                let action = undefined
+                if (moveOrBlock == ActionType.MOVE) {
+                    const validMoves = simulationGame.getValidMoves();
+                    // avoid not the game is not ending
+                    if (simulationGame.opponent.remainingBlocks == 0) {
+                        const shortestRoute = simulationGame.getShortestRoute();
+                        const effectiveMove = validMoves.find((move) => shortestRoute.some(step => step[0] == move[0] && step[1] == move[1]));
+                        action = new Action([[simulationGame.player.x, simulationGame.player.y], effectiveMove], ActionType.MOVE);
+                    } else {
+                        const selectedIdx = MathUtil.getRandomInt(validMoves.length - 1);
+                        action = new Action([[simulationGame.player.x, simulationGame.player.y], validMoves[selectedIdx]], ActionType.MOVE);
+                    }
+                } else if (moveOrBlock == ActionType.BLOCK) {
+                    const validBlocks = simulationGame.getValidBlocks();
+                    const selectedIdx = MathUtil.getRandomInt(validBlocks.length - 1);
+                    action = new Action(validBlocks[selectedIdx], ActionType.BLOCK);
+                }
+                // Log.d(`AI, ${simulationGame.currentTurn} Action`, action);
+
+                // state 3: update game status
+                if (action != undefined) {
+                    simulationGame.doAction(action);
+                    // Log.d(`AI, turn: ${simulationGame.numOfTurn} status`, simulationGame);
+                }
+            }
+
+            return simulationGame.checkWinner();
         }
     };
 })();
