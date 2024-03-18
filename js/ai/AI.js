@@ -243,6 +243,7 @@ export const AI = (() => {
         },
 
         simulation: function (game) {
+            const actionList = [];// tmp add to check
             const simulationGame = game.deepCopy();
 
             while (simulationGame.checkWinner() == null) {
@@ -272,10 +273,12 @@ export const AI = (() => {
 
                 // state 3: update game status
                 if (action != undefined) {
+                    actionList.push(action);
                     simulationGame.doAction(action);
                     // Log.d(`AI, turn: ${simulationGame.numOfTurn} status`, simulationGame);
                 }
             }
+            Log.d(`actionList`, actionList)
 
             return simulationGame.checkWinner();
         }
