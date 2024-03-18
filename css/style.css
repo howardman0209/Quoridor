@@ -199,6 +199,6 @@ button:disabled {
     min-height: 30px;
 }
 
-#gameStateIO {
+#dataIO {
     flex: auto;
 }
