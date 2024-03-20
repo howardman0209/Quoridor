@@ -2,11 +2,13 @@
 import { GameHelper } from './globalObject/GameHelper.js';
 import { Turn } from './enum/Turn.js';
 import { AI } from './ai/AI.js';
+import { MCTS } from './ai/MCTS.js';
 import { Log } from './util/Log.js';
 import { GameTracker } from './class/GameTracker.js';
-import { Direction } from './enum/Direction.js';
 import { Action } from './dataClass/Action.js';
 import { ActionType } from './enum/ActionType.js';
+import { Node } from './class/Node.js';
+import { Direction } from './enum/Direction.js';
 
 // variable 
 const gameSize = 9;
@@ -372,9 +374,11 @@ suggestBtn.onclick = () => {
     console.log(`suggestBtn clicked`);
     // let bestAction = GameHelper.findBestAction(game, 1, currentTurn);
     // console.log(Direction.getByDelta([0, 2]));
-    let simulation = AI.simulation(game);
-    Log.d("simulation", simulation);
 
+    // let simulation = AI.simulation(game);
+    // Log.d("simulation", simulation);
+
+    MCTS.monteCarloTreeSearch(new Node(game.deepCopy()), 1)
 
     // let check = AI.lookUpRoutesBetween(game.arena, [game.p1.x, game.p1.y], [0, 0], [game.p2.x, game.p2.y]);
     // Log.d("check", check);
@@ -392,6 +396,12 @@ document.addEventListener(
                 break;
             case 'ArrowLeft':
                 previousBtn.onclick();
+                break;
+            case 't':
+                console.log(`testing`, 0 / 0);
+                break;
+            case 's':
+                console.log(MCTS.monteCarloTreeSearch(new Node(game.deepCopy()), 1).takenAction);
                 break;
             default:
                 break;

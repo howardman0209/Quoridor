@@ -3,6 +3,7 @@ import { Log } from '../util/Log.js';
 import { Turn } from '../enum/Turn.js';
 import { Player } from './Player.js';
 import { GameHelper } from '../globalObject/GameHelper.js';
+import { Action } from '../dataClass/Action.js';
 import { ActionType } from '../enum/ActionType.js';
 
 export class Game {
@@ -128,6 +129,15 @@ export class Game {
 
         return verticalBlocks.concat(horizontalBlocks).filter(block => this.isValidBlock(block));
         //.filter(block => this.isAvailableToPlaceBlock(block) && !this.isDeadBlock(block));
+    }
+
+    getValidActions() {
+        const moveActions = this.getValidMoves(true).map(move => new Action([[this.player.x, this.player.y], move], ActionType.MOVE));
+        // Log.d(`moveActions`, moveActions);
+
+        const blockActions = this.getValidBlocks().map(block => new Action(block, ActionType.BLOCK));
+        // Log.d(`blockActions`, blockActions);
+        return moveActions.concat(blockActions);
     }
 
     #isAvailableToPlaceBlock(block) {
