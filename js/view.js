@@ -380,3 +380,23 @@ suggestBtn.onclick = () => {
     // Log.d("check", check);
     // console.log(JSON.stringify(check));
 }
+
+// keyboard event
+document.addEventListener(
+    "keydown", (event) => {
+        const keyName = event.key;
+        // console.log(keyName);
+        switch (keyName) {
+            case `ArrowRight`:
+                nextBtn.onclick();
+                break;
+            case 'ArrowLeft':
+                previousBtn.onclick();
+                break;
+            default:
+                break;
+        }
+
+    },
+    false,
+);

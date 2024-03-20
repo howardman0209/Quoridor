@@ -254,10 +254,10 @@ export const AI = (() => {
                 // state 2: select move / block options
                 let action = undefined
                 if (moveOrBlock == ActionType.MOVE) {
-                    const validMoves = simulationGame.getValidMoves();
+                    const validMoves = simulationGame.getValidMoves(true);
                     // avoid not the game is not ending
-                    if (simulationGame.opponent.remainingBlocks == 0) {
-                        const shortestRoute = simulationGame.getShortestRoute();
+                    if (simulationGame.opponent.remainingBlocks == 0 || simulationGame.player.remainingBlocks == 0 || this.winInNextMove(game)) {
+                        const shortestRoute = simulationGame.getShortestRoute(true);
                         const effectiveMove = validMoves.find((move) => shortestRoute.some(step => step[0] == move[0] && step[1] == move[1]));
                         action = new Action([[simulationGame.player.x, simulationGame.player.y], effectiveMove], ActionType.MOVE);
                     } else {
