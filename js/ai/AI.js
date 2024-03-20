@@ -255,7 +255,7 @@ export const AI = (() => {
                 let action = undefined
                 if (moveOrBlock == ActionType.MOVE) {
                     const validMoves = simulationGame.getValidMoves(true);
-                    // avoid not the game is not ending
+                    // ensure game reach terminate status & accelerate simulation
                     if (simulationGame.opponent.remainingBlocks == 0 || simulationGame.player.remainingBlocks == 0 || this.winInNextMove(game)) {
                         const shortestRoute = simulationGame.getShortestRoute(true);
                         const effectiveMove = validMoves.find((move) => shortestRoute.some(step => step[0] == move[0] && step[1] == move[1]));
