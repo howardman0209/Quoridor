@@ -1,5 +1,6 @@
 import { Log } from '../util/Log.js';
 import { Node } from '../class/Node.js';
+import { AI } from '../ai/AI.js';
 
 export const MCTS = (() => {
     function selection(node) {
@@ -8,14 +9,12 @@ export const MCTS = (() => {
         // Traverse the tree based on a selection policy until a leaf node is reached
         // Return the selected node
 
-        let currentNode = Object.assign({}, node); // Create a copy of the node object
-
-        while (currentNode.children.length !== 0) {
+        while (node.children.length !== 0) {
             // UCB1 calculation for each child node
-            const ucb1Values = currentNode.children.map(child => {
+            const ucb1Values = node.children.map(child => {
                 if (child.visits !== 0) {
                     const exploitation = child.score / child.visits;
-                    const exploration = Math.sqrt((2 * Math.log(currentNode.visits)) / child.visits);
+                    const exploration = Math.sqrt((2 * Math.log(node.visits)) / child.visits);
                     return exploitation + exploration;
                 } else {
                     return Infinity;
@@ -35,10 +34,10 @@ export const MCTS = (() => {
 
             // Randomly select one child node from the ones with the maximum UCB1 value
             const randomChildIndex = maxUCB1Indices[Math.floor(Math.random() * maxUCB1Indices.length)];
-            currentNode = currentNode.children[randomChildIndex];
+            node = node.children[randomChildIndex];
         }
 
-        return currentNode;
+        return node;
     }
 
     function expansion(node) {
@@ -63,11 +62,11 @@ export const MCTS = (() => {
         return node;
     }
 
-    function simulation(nodeState) {
+    function rollout(nodeState) {
         // start with the argument's game state 
         // to simulate the remaining game process random until reach terminate state (EndGame)
-        // define score, (win or lose): [ win:1 | lose:0 ]
-        console.log(`simulation`);
+        // console.log(`rollout`, nodeState.currentTurn);
+        return AI.simulation(nodeState);
     }
 
     function backpropagation(node, score) {
@@ -101,29 +100,35 @@ export const MCTS = (() => {
 
     return {
 
-        monteCarloTreeSearch: function (rootNode, iterations) {
-            for (let i = 0; i < iterations; i++) {
-                // Selection phase: Choose a node to expand
-                let node = selection(rootNode);
-                Log.d(`selection`, node);
-
-                // Expansion phase: Create a new child node
-                let newNode = expansion(node);
-                console.log(`expansion`, newNode);
-
-                // Simulation phase: Simulate a random game play
-                let score = simulation(newNode.state);
-                Log.d(`simulation`, score);
-
-                // Backpropagation phase: Update scores of the visited nodes
-                backpropagation(newNode, score);
-                Log.d(`backpropagation`, null);
+        search: function (rootNode, numberOfIterations) {
+            const targetWinner = rootNode.state.currentTurn;
+            // console.log(`targetWinner`, targetWinner);
+            let targetNode = rootNode;
+            for (let i = 0; i < numberOfIterations; i++) {
+                if (i == 0) {
+                    expansion(targetNode)
+                } else {
+                    targetNode = selection(targetNode);
+                    // console.log(`targetNode`, targetNode);
+                    const isNewNode = targetNode.visits == 0;
+                    if (isNewNode) {
+                        // define score, (win or lose): [ win:1 | lose:0 ]
+                        const simulationWinner = rollout(targetNode.state);
+                        // console.log(`targetWinner`, targetWinner);
+                        // console.log(`simulationWinner`, simulationWinner);
+                        const score = simulationWinner == targetWinner ? 1 : 0;
+                        // console.log(`score`, score);
+                        backpropagation(targetNode, score);
+                    } else {
+                        expansion(targetNode)
+                    }
+                }
             }
+            // console.log(`targetNode`, targetNode);
+            const bestChild = getBestChild(rootNode);
+            // console.log(`bestChild`, bestChild);
 
-            // Get the best move by choosing the child with the highest average score
-            let bestChild = getBestChild(rootNode);
-            return bestChild.state; // Return the state associated with the best move
+            return bestChild;
         }
-
     }
 })();

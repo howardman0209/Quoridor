@@ -130,6 +130,9 @@ export const AI = (() => {
         winInNextMove: function (game) {
             const player = game.player;
             let playerShortest = game.getShortestRoute(true);
+            if (playerShortest == null) {
+                return false;
+            }
             let lastSlot = playerShortest[playerShortest.length - 2];
             // Log.d(`lastSlot`, lastSlot);
             return lastSlot[0] == player.x && lastSlot[1] == player.y;
@@ -255,9 +258,9 @@ export const AI = (() => {
                 let action = undefined
                 if (moveOrBlock == ActionType.MOVE) {
                     const validMoves = simulationGame.getValidMoves(true);
+                    const shortestRoute = simulationGame.getShortestRoute(true);
                     // ensure game reach terminate status & accelerate simulation
-                    if (simulationGame.opponent.remainingBlocks == 0 || simulationGame.player.remainingBlocks == 0 || this.winInNextMove(game)) {
-                        const shortestRoute = simulationGame.getShortestRoute(true);
+                    if (shortestRoute != null && (simulationGame.opponent.remainingBlocks == 0 || simulationGame.player.remainingBlocks == 0 || this.winInNextMove(game))) {
                         const effectiveMove = validMoves.find((move) => shortestRoute.some(step => step[0] == move[0] && step[1] == move[1]));
                         action = new Action([[simulationGame.player.x, simulationGame.player.y], effectiveMove], ActionType.MOVE);
                     } else {
@@ -278,7 +281,7 @@ export const AI = (() => {
                     // Log.d(`AI, turn: ${simulationGame.numOfTurn} status`, simulationGame);
                 }
             }
-            Log.d(`actionList`, actionList)
+            // Log.d(`actionList`, actionList)
 
             return simulationGame.checkWinner();
         }

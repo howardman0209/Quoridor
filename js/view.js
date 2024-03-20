@@ -375,10 +375,8 @@ suggestBtn.onclick = () => {
     // let bestAction = GameHelper.findBestAction(game, 1, currentTurn);
     // console.log(Direction.getByDelta([0, 2]));
 
-    // let simulation = AI.simulation(game);
-    // Log.d("simulation", simulation);
-
-    MCTS.monteCarloTreeSearch(new Node(game.deepCopy()), 1)
+    let simulation = AI.simulation(game);
+    Log.d("simulation", simulation);
 
     // let check = AI.lookUpRoutesBetween(game.arena, [game.p1.x, game.p1.y], [0, 0], [game.p2.x, game.p2.y]);
     // Log.d("check", check);
@@ -398,10 +396,10 @@ document.addEventListener(
                 previousBtn.onclick();
                 break;
             case 't':
-                console.log(`testing`, 0 / 0);
+                console.log(`testing`, game.getShortestRoute(true));
                 break;
             case 's':
-                console.log(MCTS.monteCarloTreeSearch(new Node(game.deepCopy()), 1).takenAction);
+                console.log(MCTS.search(new Node(game.deepCopy()), 20).takenAction);
                 break;
             default:
                 break;
