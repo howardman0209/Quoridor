@@ -207,7 +207,7 @@ function clearSelection() {
 
 function updateTurnLabel() {
     const turnLabel = document.getElementById("turnLabel");
-    turnLabel.innerHTML = `<div class="flex"><p class="with-pawn">Turn ${game.numOfTurn} - ${game.currentTurn}</p>${getPawn(game.currentTurn)}`;
+    turnLabel.innerHTML = `<div class="flex"><p class="with-pawn">Turn ${game.numOfTurn} - ${game.currentTurn}</p>${getPawn(game.currentTurn)}</div>`;
 }
 
 function setWinnerLabel() {
@@ -239,6 +239,8 @@ function getBlock(turn) {
 
 function sendWorkerRequest() {
     // Send data to the web worker
+    showLoadingIndicator(true);
+
     const request = {
         "task": "AI",
         "data": game.deepCopy()
@@ -249,11 +251,27 @@ function sendWorkerRequest() {
 function setWorkerLisenter() {
     // Handle messages received from the web worker
     worker.onmessage = function (event) {
+        showLoadingIndicator(false);
         const result = event.data;
         console.log(result);
+        game.doAction(result.data.takenAction);
+        renderPage();
         // Process the result received from the web worker
         // Update the UI or perform further operations
     };
+}
+
+function showLoadingIndicator(show) {
+    saveLoadBtn.disabled = show;
+    recordPlayBtn.disabled = show;
+    restartBtn.disabled = show;
+    confirmBtn.disabled = show;
+
+    if (show) {
+        loadingIndicator.classList.remove("hidden");
+    } else {
+        loadingIndicator.classList.add("hidden");
+    }
 }
 
 
@@ -271,7 +289,7 @@ updateBlocksRemain();
 //[[1, 0], [1, 1], [1, 2]]
 // let block = [[1, 0], [1, 1], [1, 2]]
 // console.log(game);
-
+const loadingIndicator = document.getElementById(`loadingIndicator`);
 const blockBtn = document.getElementById("blockBtn");
 blockBtn.onclick = () => {
     // console.log(`blockBtn clicked`);
