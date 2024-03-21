@@ -278,3 +278,10 @@ export class Game {
     }
 
 }
+
+Game.newInstance = function (gameMeta) {
+    const size = (gameMeta.arena.length + 1) / 2;
+    const game = GameHelper.initGame(size);
+    game.loadData(gameMeta);
+    return game;
+}

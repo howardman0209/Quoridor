@@ -105,8 +105,9 @@ export const MCTS = (() => {
             // console.log(`targetWinner`, targetWinner);
             let targetNode = rootNode;
             for (let i = 0; i < numberOfIterations; i++) {
+                console.log(`MCTS - iteration: ${i}`);
                 if (i == 0) {
-                    expansion(targetNode)
+                    expansion(targetNode);
                 } else {
                     targetNode = selection(targetNode);
                     // console.log(`targetNode`, targetNode);
@@ -120,7 +121,7 @@ export const MCTS = (() => {
                         // console.log(`score`, score);
                         backpropagation(targetNode, score);
                     } else {
-                        expansion(targetNode)
+                        expansion(targetNode);
                     }
                 }
             }

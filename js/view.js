@@ -235,10 +235,31 @@ function getBlock(turn) {
     return `<span class="block" style="background-color:${colorRGB};"></span>`
 }
 
+function sendWorkerRequest() {
+    // Send data to the web worker
+    const request = {
+        "task": "AI",
+        "data": game.deepCopy()
+    };
+    worker.postMessage(request);
+}
+
+function setWorkerLisenter() {
+    // Handle messages received from the web worker
+    worker.onmessage = function (event) {
+        const result = event.data;
+        console.log(result);
+        // Process the result received from the web worker
+        // Update the UI or perform further operations
+    };
+}
+
 
 // OnCreate
 const game = GameHelper.initGame(gameSize);
 const gameTracker = new GameTracker(game);
+const worker = new Worker("./js/worker.js", { type: "module" });
+setWorkerLisenter();
 // const clone = game.deepCopy()
 // console.log(game);
 drawBoard();
@@ -396,10 +417,11 @@ document.addEventListener(
                 previousBtn.onclick();
                 break;
             case 't':
-                console.log(`testing`, game.getShortestRoute(true));
+                sendWorkerRequest();
+                // console.log(`testing`, game.getShortestRoute(true));
                 break;
             case 's':
-                console.log(MCTS.search(new Node(game.deepCopy()), 20).takenAction);
+                // console.log(MCTS.search(new Node(game.deepCopy()), 40).takenAction);
                 break;
             default:
                 break;
