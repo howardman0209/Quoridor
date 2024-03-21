@@ -112,7 +112,7 @@ export const MCTS = (() => {
                     targetNode = selection(targetNode);
                     // console.log(`targetNode`, targetNode);
                     const isNewNode = targetNode.visits == 0;
-                    if (isNewNode) {
+                    if (isNewNode || targetNode.state.checkWinner() != null) {
                         // define score, (win or lose): [ win:1 | lose:0 ]
                         const simulationWinner = rollout(targetNode.state);
                         // console.log(`targetWinner`, targetWinner);
