@@ -137,7 +137,11 @@ export class Game {
 
         const blockActions = this.getValidBlocks().map(block => new Action(block, ActionType.BLOCK));
         // Log.d(`blockActions`, blockActions);
-        return moveActions.concat(blockActions);
+        if (this.player.remainingBlocks > 0) {
+            return moveActions.concat(blockActions);
+        } else {
+            return moveActions;
+        }
     }
 
     #isAvailableToPlaceBlock(block) {

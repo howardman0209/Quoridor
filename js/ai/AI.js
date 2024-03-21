@@ -248,6 +248,7 @@ export const AI = (() => {
         simulation: function (game) {
             const actionList = [];// tmp add to check
             const simulationGame = game.deepCopy();
+            Log.d(`simulation init state`, simulationGame)
 
             while (simulationGame.checkWinner() == null) {
                 // state 1: choose move or block
@@ -281,7 +282,7 @@ export const AI = (() => {
                     // Log.d(`AI, turn: ${simulationGame.numOfTurn} status`, simulationGame);
                 }
             }
-            // Log.d(`actionList`, actionList)
+            Log.d(`actionList (${actionList.length})`, actionList)
 
             return simulationGame.checkWinner();
         }

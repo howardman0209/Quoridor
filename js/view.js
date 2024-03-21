@@ -57,6 +57,8 @@ function renderPage() {
         endGame();
         setWinnerLabel();
     } else {
+        moveBtn.disabled = false;
+        confirmBtn.disabled = false;
         updateBlocksRemain();
         updateTurnLabel();
         updateTrackingBtn();
@@ -361,7 +363,7 @@ recordPlayBtn.onclick = () => {
         try {
             let data = JSON.parse(dataIO.value)
             gameTracker.importRecord(data);
-            game.restart();
+            // game.restart();
             renderPage();
         } catch (error) {
             alert(error);
@@ -390,18 +392,12 @@ nextBtn.onclick = () => {
     }
 }
 
-const suggestBtn = document.getElementById("suggestBtn");
-suggestBtn.onclick = () => {
-    console.log(`suggestBtn clicked`);
-    // let bestAction = GameHelper.findBestAction(game, 1, currentTurn);
-    // console.log(Direction.getByDelta([0, 2]));
-
-    let simulation = AI.simulation(game);
-    Log.d("simulation", simulation);
-
-    // let check = AI.lookUpRoutesBetween(game.arena, [game.p1.x, game.p1.y], [0, 0], [game.p2.x, game.p2.y]);
-    // Log.d("check", check);
-    // console.log(JSON.stringify(check));
+const restartBtn = document.getElementById("restartBtn");
+restartBtn.onclick = () => {
+    console.log(`restartBtn clicked`);
+    game.restart();
+    gameTracker.clear();
+    renderPage();
 }
 
 // keyboard event
@@ -421,7 +417,8 @@ document.addEventListener(
                 // console.log(`testing`, game.getShortestRoute(true));
                 break;
             case 's':
-                // console.log(MCTS.search(new Node(game.deepCopy()), 40).takenAction);
+                AI.simulation(game);
+                // console.log(game.deepCopy());
                 break;
             default:
                 break;
