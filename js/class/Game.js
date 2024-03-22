@@ -221,20 +221,11 @@ export class Game {
 
     checkWinner() {
         // check player
-        const player = this.player;
-        let playerShortestRoute = GameHelper.lookUpShortestRoute(this.arena, [player.x, player.y], player.goalLine);
-        // Log.d(`checkWinner, player`, player.goalLine);
-
-        // check opponent
-        const opponent = this.opponent;
-        let opponentShortestRoute = GameHelper.lookUpShortestRoute(this.arena, [opponent.x, opponent.y], opponent.goalLine);
-        // Log.d(`checkWinner, opponent`, opponent.goalLine);
-
-        if (playerShortestRoute.length - 1 == 0) {
+        if (this.player.y == this.player.goalLine) {
             return this.currentTurn;
         }
-
-        if (opponentShortestRoute.length - 1 == 0) {
+        // check opponent
+        if (this.opponent.y == this.opponent.goalLine) {
             return this.nextTurn;
         }
 
