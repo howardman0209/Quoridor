@@ -130,17 +130,11 @@ textarea:focus {
     visibility: hidden;
 }
 
-.loader {
-    width: auto;
-    height: 10px;
-    background: linear-gradient(rgb(169, 169, 169) 0 0) 0/0% no-repeat #000000;
-    animation: l1 2s infinite linear;
-}
-
-@keyframes l1 {
-    100% {
-        background-size: 100%
-    }
+#progressBar {
+    width: 0%;
+    margin: 3px 0px 3px 0px;
+    height: 8px;
+    background-color: #ffffff;
 }
 
 button {

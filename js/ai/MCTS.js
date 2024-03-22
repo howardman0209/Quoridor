@@ -100,12 +100,13 @@ export const MCTS = (() => {
 
     return {
 
-        search: function (rootNode, numberOfIterations) {
+        search: function (rootNode, numberOfIterations, callback) {
             const targetWinner = rootNode.state.currentTurn;
             // console.log(`targetWinner`, targetWinner);
             let targetNode = rootNode;
             for (let i = 0; i < numberOfIterations; i++) {
                 console.log(`MCTS - iteration: ${i}`);
+                callback(i / numberOfIterations * 100);
                 if (i == 0) {
                     expansion(targetNode);
                 } else {

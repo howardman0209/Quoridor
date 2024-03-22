@@ -9,7 +9,7 @@ self.onmessage = function (event) {
     const task = request.task;
     const data = request.data;
     switch (task) {
-        case `AI`:
+        case `AI_ACTION`:
             aiAction(data);
             break;
         default:
@@ -30,11 +30,15 @@ function callback(task, data) {
 function aiAction(data) {
     // Process the data and perform complex calculations
     // ...
+    const updateProgress = (progress) => { 
+        // console.log(`progress: ${progress}%`);
+        callback(`UPDATE_PROGRESS`, progress);
+    }
     const cloneGame = Game.newInstance(data);
     console.log(cloneGame);
-    const result = MCTS.search(new Node(cloneGame), 1000);
+    const result = MCTS.search(new Node(cloneGame), 1000, updateProgress);
 
-    callback(`AI`, result);
+    callback(`AI_ACTION`, result);
 }
 
 /*

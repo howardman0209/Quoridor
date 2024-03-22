@@ -239,10 +239,10 @@ function getBlock(turn) {
 
 function sendWorkerRequest() {
     // Send data to the web worker
-    showLoadingIndicator(true);
+    showProgressBar(true);
 
     const request = {
-        "task": "AI",
+        "task": "AI_ACTION",
         "data": game.deepCopy()
     };
     worker.postMessage(request);
@@ -251,28 +251,47 @@ function sendWorkerRequest() {
 function setWorkerLisenter() {
     // Handle messages received from the web worker
     worker.onmessage = function (event) {
-        showLoadingIndicator(false);
-        const result = event.data;
-        console.log(result);
-        game.doAction(result.data.takenAction);
-        gameTracker.record(result.data.takenAction);
-        renderPage();
         // Process the result received from the web worker
         // Update the UI or perform further operations
+        const response = event.data;
+        const task = response.task;
+        const data = response.data;
+        switch (task) {
+            case `AI_ACTION`:
+                console.log(response);
+                takeAIAction(data.takenAction);
+                break;
+            case `UPDATE_PROGRESS`:
+                setProgress(data);
+                break;
+            default:
+                break;
+        }
     };
+
+    function takeAIAction(action) {
+        showProgressBar(false);
+        game.doAction(action);
+        gameTracker.record(action);
+        renderPage();
+    }
 }
 
-function showLoadingIndicator(show) {
+function showProgressBar(show) {
     saveLoadBtn.disabled = show;
     recordPlayBtn.disabled = show;
     restartBtn.disabled = show;
     confirmBtn.disabled = show;
 
     if (show) {
-        loadingIndicator.classList.remove("hidden");
+        progressBar.classList.remove("hidden");
     } else {
-        loadingIndicator.classList.add("hidden");
+        progressBar.classList.add("hidden");
     }
+}
+
+function setProgress(progress) {
+    progressBar.style.width = `${progress}%`;
 }
 
 
@@ -290,7 +309,7 @@ updateBlocksRemain();
 //[[1, 0], [1, 1], [1, 2]]
 // let block = [[1, 0], [1, 1], [1, 2]]
 // console.log(game);
-const loadingIndicator = document.getElementById(`loadingIndicator`);
+const progressBar = document.getElementById(`progressBar`);
 const blockBtn = document.getElementById("blockBtn");
 blockBtn.onclick = () => {
     // console.log(`blockBtn clicked`);
