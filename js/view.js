@@ -255,6 +255,7 @@ function setWorkerLisenter() {
         const result = event.data;
         console.log(result);
         game.doAction(result.data.takenAction);
+        gameTracker.record(result.data.takenAction);
         renderPage();
         // Process the result received from the web worker
         // Update the UI or perform further operations
