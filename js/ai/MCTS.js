@@ -109,7 +109,7 @@ export const MCTS = (() => {
                 if (i == 0) {
                     expansion(targetNode);
                 } else {
-                    targetNode = selection(targetNode);
+                    targetNode = selection(rootNode);
                     // console.log(`targetNode`, targetNode);
                     const isNewNode = targetNode.visits == 0;
                     if (isNewNode || targetNode.state.checkWinner() != null) {

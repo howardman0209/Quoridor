@@ -32,7 +32,7 @@ function aiAction(data) {
     // ...
     const cloneGame = Game.newInstance(data);
     console.log(cloneGame);
-    const result = MCTS.search(new Node(cloneGame), 200);
+    const result = MCTS.search(new Node(cloneGame), 1000);
 
     callback(`AI`, result);
 }
