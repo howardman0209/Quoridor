@@ -1,6 +1,7 @@
 import { Log } from '../util/Log.js';
 import { Node } from '../class/Node.js';
 import { AI } from '../ai/AI.js';
+import { ActionType } from '../enum/ActionType.js';
 
 export const MCTS = (() => {
     function selection(node) {
@@ -15,7 +16,8 @@ export const MCTS = (() => {
                 if (child.visits !== 0) {
                     const exploitation = child.score / child.visits;
                     const exploration = Math.sqrt((2 * Math.log(node.visits)) / child.visits);
-                    return exploitation + exploration;
+                    // const effectiveHeuristic = AI.getEffectiveActionHeuristic(node.state, child.state);
+                    return exploitation + exploration ;//+ effectiveHeuristic;
                 } else {
                     return Infinity;
                 }
@@ -105,7 +107,7 @@ export const MCTS = (() => {
             // console.log(`targetWinner`, targetWinner);
             let targetNode = rootNode;
             for (let i = 0; i < numberOfIterations; i++) {
-                console.log(`MCTS - iteration: ${i}`);
+                // console.log(`MCTS - iteration: ${i}`);
                 callback(i / numberOfIterations * 100);
                 if (i == 0) {
                     expansion(targetNode);

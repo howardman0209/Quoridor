@@ -36,7 +36,7 @@ function aiAction(data) {
     }
     const cloneGame = Game.newInstance(data);
     console.log(cloneGame);
-    const result = MCTS.search(new Node(cloneGame), 1000, updateProgress);
+    const result = MCTS.search(new Node(cloneGame), 2000, updateProgress);
 
     callback(`AI_ACTION`, result);
 }

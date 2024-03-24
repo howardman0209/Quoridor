@@ -2,10 +2,10 @@
 import { GameHelper } from '../globalObject/GameHelper.js';
 import { ActionType } from '../enum/ActionType.js';
 import { Direction } from '../enum/Direction.js';
-import { Log } from '../util/Log.js';
 import { MathUtil } from '../util/MathUtil.js';
-import { Turn } from '../enum/Turn.js';
 import { Action } from '../dataClass/Action.js';
+import { Log } from '../util/Log.js';
+import { Turn } from '../enum/Turn.js';
 
 export const AI = (() => {
     return {
@@ -123,7 +123,7 @@ export const AI = (() => {
 
             // let criticalSlots = this.findCriticalSlots(game, game.currentTurn);
             // Log.d(`criticalSlots`, criticalSlots);
-            const moveOrBlock = MathUtil.getRandomInt(2) == 0 ? ActionType.MOVE : ActionType.BLOCK;
+            const moveOrBlock = Math.random() < 0.7 ? ActionType.MOVE : ActionType.BLOCK;
             return moveOrBlock;
         },
 
@@ -245,6 +245,19 @@ export const AI = (() => {
 
         },
 
+        getEffectiveActionHeuristic(before, after) {
+            // console.log(`before`, before, `after`, after);
+            const beforePlayer = before.player;
+            const beforeOpponent = before.opponent;
+            const afterPlayer = after.player;
+            const afterOpponent = after.opponent;
+            const pastShortestRoute = GameHelper.lookUpShortestRoute(before.arena, [beforePlayer.x, beforePlayer.y], beforePlayer.goalLine, [beforeOpponent.x, beforeOpponent.y]).length;
+            const currentShortestRoute = GameHelper.lookUpShortestRoute(after.arena, [afterOpponent.x, afterOpponent.y], afterOpponent.goalLine, [afterPlayer.x, afterPlayer.y]).length;
+            const score = pastShortestRoute - currentShortestRoute;
+            // console.log(afterOpponent, score);
+            return score;
+        },
+
         simulation: function (game) {
             const actionList = [];// tmp add to check
             const simulationGame = game.deepCopy();
@@ -260,8 +273,9 @@ export const AI = (() => {
                 if (moveOrBlock == ActionType.MOVE) {
                     const validMoves = simulationGame.getValidMoves(true);
                     const shortestRoute = simulationGame.getShortestRoute(true);
+                    const randomChance = Math.random() < 0.75
                     // ensure game reach terminate status & accelerate simulation
-                    if (shortestRoute != null && (simulationGame.opponent.remainingBlocks == 0 || simulationGame.player.remainingBlocks == 0 || this.winInNextMove(game))) {
+                    if (shortestRoute != null && (simulationGame.opponent.remainingBlocks == 0 || this.winInNextMove(game) || randomChance)) {
                         const effectiveMove = validMoves.find((move) => shortestRoute.some(step => step[0] == move[0] && step[1] == move[1]));
                         action = new Action([[simulationGame.player.x, simulationGame.player.y], effectiveMove], ActionType.MOVE);
                     } else {
