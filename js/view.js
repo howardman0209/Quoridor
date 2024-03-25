@@ -274,14 +274,19 @@ function setWorkerLisenter() {
         game.doAction(action);
         gameTracker.record(action);
         renderPage();
+
+        // self play mode
+        // if (game.checkWinner() == null) {
+        //     sendWorkerRequest();
+        // }
     }
 }
 
 function showProgressBar(show) {
-    saveLoadBtn.disabled = show;
-    recordPlayBtn.disabled = show;
-    restartBtn.disabled = show;
-    confirmBtn.disabled = show;
+    // saveLoadBtn.disabled = show;
+    // recordPlayBtn.disabled = show;
+    // restartBtn.disabled = show;
+    // confirmBtn.disabled = show;
 
     if (show) {
         progressBar.classList.remove("hidden");

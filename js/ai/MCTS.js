@@ -1,7 +1,9 @@
-import { Log } from '../util/Log.js';
 import { Node } from '../class/Node.js';
-import { AI } from '../ai/AI.js';
+import { MathUtil } from '../util/MathUtil.js';
+import { Action } from '../dataClass/Action.js';
 import { ActionType } from '../enum/ActionType.js';
+import { Log } from '../util/Log.js';
+import { AI } from '../ai/AI.js';
 
 export const MCTS = (() => {
     function selection(node) {
@@ -17,7 +19,7 @@ export const MCTS = (() => {
                     const exploitation = child.score / child.visits;
                     const exploration = Math.sqrt((2 * Math.log(node.visits)) / child.visits);
                     // const effectiveHeuristic = AI.getEffectiveActionHeuristic(node.state, child.state);
-                    return exploitation + exploration ;//+ effectiveHeuristic;
+                    return exploitation + exploration;//+ effectiveHeuristic;
                 } else {
                     return Infinity;
                 }
@@ -68,7 +70,71 @@ export const MCTS = (() => {
         // start with the argument's game state 
         // to simulate the remaining game process random until reach terminate state (EndGame)
         // console.log(`rollout`, nodeState.currentTurn);
-        return AI.simulation(nodeState);
+        const winInNextMove = (game) => {
+            const player = game.player;
+            let playerShortest = game.getShortestRoute(true);
+            if (playerShortest == null) {
+                return false;
+            }
+            let lastSlot = playerShortest[playerShortest.length - 2];
+            // Log.d(`lastSlot`, lastSlot);
+            return lastSlot[0] == player.x && lastSlot[1] == player.y;
+        }
+
+        const decideMoveOrBlock = (game) => {
+            const [player, opponent] = [game.player, game.opponent]
+
+            if (player.remainingBlocks <= 0) {
+                return ActionType.MOVE; // Theorem 1
+            }
+
+            if (winInNextMove(game)) {
+                return ActionType.MOVE;  // Theorem 2
+            }
+
+            return Math.random() < 0.7 ? ActionType.MOVE : ActionType.BLOCK;
+        }
+
+        const actionList = [];// tmp add to check
+        const simulationGame = nodeState.deepCopy();
+        // Log.d(`simulation init state`, simulationGame);
+
+        while (simulationGame.checkWinner() == null) {
+            // state 1: choose move or block
+            const moveOrBlock = decideMoveOrBlock(simulationGame);
+            // Log.d(`AI, moveOrBlock`, moveOrBlock);
+
+            // state 2: select move / block options
+            let action = undefined
+            if (moveOrBlock == ActionType.MOVE) {
+                const validMoves = simulationGame.getValidMoves(true);
+                const shortestRoute = simulationGame.getShortestRoute(true);
+                const randomChance = Math.random() < 0.75
+                // ensure game reach terminate status & accelerate simulation
+                if (shortestRoute != null && (simulationGame.opponent.remainingBlocks == 0 || winInNextMove(nodeState) || randomChance)) {
+                    const effectiveMove = validMoves.find((move) => shortestRoute.some(step => step[0] == move[0] && step[1] == move[1]));
+                    action = new Action([[simulationGame.player.x, simulationGame.player.y], effectiveMove], ActionType.MOVE);
+                } else {
+                    const selectedIdx = MathUtil.getRandomInt(validMoves.length - 1);
+                    action = new Action([[simulationGame.player.x, simulationGame.player.y], validMoves[selectedIdx]], ActionType.MOVE);
+                }
+            } else if (moveOrBlock == ActionType.BLOCK) {
+                const validBlocks = simulationGame.getValidBlocks();
+                const selectedIdx = MathUtil.getRandomInt(validBlocks.length - 1);
+                action = new Action(validBlocks[selectedIdx], ActionType.BLOCK);
+            }
+            // Log.d(`AI, ${simulationGame.currentTurn} Action`, action);
+
+            // state 3: update game status
+            if (action != undefined) {
+                actionList.push(action);
+                simulationGame.doAction(action);
+                // Log.d(`AI, turn: ${simulationGame.numOfTurn} status`, simulationGame);
+            }
+        }
+        // Log.d(`actionList (${actionList.length})`, actionList);
+
+        return simulationGame.checkWinner();
     }
 
     function backpropagation(node, score) {
@@ -115,16 +181,25 @@ export const MCTS = (() => {
                     targetNode = selection(rootNode);
                     // console.log(`targetNode`, targetNode);
                     const isNewNode = targetNode.visits == 0;
-                    if (isNewNode || targetNode.state.checkWinner() != null) {
-                        // define score, (win or lose): [ win:1 | lose:0 ]
-                        const simulationWinner = rollout(targetNode.state);
-                        // console.log(`targetWinner`, targetWinner);
-                        // console.log(`simulationWinner`, simulationWinner);
-                        const score = simulationWinner == targetWinner ? 1 : 0;
-                        // console.log(`score`, score);
-                        backpropagation(targetNode, score);
+                    const currentNodeWinner = targetNode.state.checkWinner();
+                    if (currentNodeWinner != null) {
+                        if (currentNodeWinner == targetWinner) { // winning node
+                            backpropagation(targetNode, 9999);
+                        } else { // losing node
+                            backpropagation(targetNode, -9999);
+                        }
                     } else {
-                        expansion(targetNode);
+                        if (isNewNode) {
+                            // define score, (win or lose): [ win:1 | lose:0 ]
+                            const simulationWinner = rollout(targetNode.state);
+                            // console.log(`targetWinner`, targetWinner);
+                            // console.log(`simulationWinner`, simulationWinner);
+                            const score = simulationWinner == targetWinner ? 1 : 0;
+                            // console.log(`score`, score);
+                            backpropagation(targetNode, score);
+                        } else {
+                            expansion(targetNode);
+                        }
                     }
                 }
             }

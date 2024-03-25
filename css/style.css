@@ -171,6 +171,7 @@ button:disabled {
 
 #board {
     background-color: rgb(100, 89, 74);
+    max-width: fit-content;
     position: relative;
     margin: 10px;
 }

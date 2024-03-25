@@ -220,13 +220,30 @@ export class Game {
     }
 
     checkWinner() {
-        // check player
+        // check current terminated state
         if (this.player.y == this.player.goalLine) {
             return this.currentTurn;
         }
-        // check opponent
+
         if (this.opponent.y == this.opponent.goalLine) {
             return this.nextTurn;
+        }
+
+        // check predictable terminated state
+        if (this.opponent.remainingBlocks <= 0) {
+            const playerShortestRoute = GameHelper.lookUpShortestRoute(this.arena, [this.player.x, this.player.y], this.player.goalLine, [this.opponent.x, this.opponent.y]);
+            const opponentShortestRoute = GameHelper.lookUpShortestRoute(this.arena, [this.opponent.x, this.opponent.y], this.opponent.goalLine, [this.player.x, this.player.y]);
+            if (playerShortestRoute != null && opponentShortestRoute != null && playerShortestRoute.length < opponentShortestRoute.length) {
+                return this.currentTurn;
+            }
+        }
+
+        if (this.player.remainingBlocks <= 0) {
+            const playerShortestRoute = GameHelper.lookUpShortestRoute(this.arena, [this.player.x, this.player.y], this.player.goalLine, [this.opponent.x, this.opponent.y]);
+            const opponentShortestRoute = GameHelper.lookUpShortestRoute(this.arena, [this.opponent.x, this.opponent.y], this.opponent.goalLine, [this.player.x, this.player.y]);
+            if (playerShortestRoute != null && opponentShortestRoute != null && opponentShortestRoute.length < playerShortestRoute.length) {
+                return this.nextTurn;
+            }
         }
 
         return null;
