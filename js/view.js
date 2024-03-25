@@ -290,6 +290,7 @@ function showProgressBar(show) {
 
     if (show) {
         progressBar.classList.remove("hidden");
+        setProgress(0);
     } else {
         progressBar.classList.add("hidden");
     }
