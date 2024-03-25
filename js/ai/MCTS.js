@@ -19,8 +19,9 @@ export const MCTS = (() => {
                 if (child.visits !== 0) {
                     const exploitation = child.score / child.visits;
                     const exploration = Math.sqrt((2 * Math.log(node.visits)) / child.visits);
+                    const ucb = exploitation + exploration;
                     const distanceHeuristicScore = AI.getDistanceHeuristicScore(child.state);
-                    return exploitation + exploration + distanceHeuristicScore;
+                    return ucb + distanceHeuristicScore;
                 } else {
                     return Infinity;
                 }
@@ -154,10 +155,9 @@ export const MCTS = (() => {
             if (child.visits !== 0) {
                 const exploitation = child.score / child.visits;
                 const exploration = Math.sqrt((2 * Math.log(node.visits)) / child.visits);
-                // console.log(`@DEBUG`, child);
+                const ucb = exploitation + exploration;
                 const distanceHeuristicScore = AI.getDistanceHeuristicScore(child.state);
-                // const remainingBlocksHeuristicScore = AI.getRemainingBlocksHeuristicScore(child.state) / child.visits;
-                return exploitation + exploration + distanceHeuristicScore// + remainingBlocksHeuristicScore;
+                return ucb + distanceHeuristicScore;
             } else {
                 return Infinity;
             }
@@ -177,12 +177,12 @@ export const MCTS = (() => {
         // Randomly select one child node from the ones with the maximum UCB1 value
         const randomChoice = MathUtil.getRandomInt(maxUCB1Indices.length);
         const randomChildIndex = maxUCB1Indices[randomChoice];
-        // console.log(`@DEBUG`, node.children);
-        // console.log(`@DEBUG`, ucb1Values);
-        // console.log(`@DEBUG`, maxUCB1Value);
-        // console.log(`@DEBUG`, maxUCB1Indices);
-        // console.log(`@DEBUG`, randomChoice);
-        // console.log(`@DEBUG`, randomChildIndex);
+        console.log(`@DEBUG`, node.children);
+        console.log(`@DEBUG`, ucb1Values);
+        console.log(`@DEBUG`, maxUCB1Value);
+        console.log(`@DEBUG`, maxUCB1Indices);
+        console.log(`@DEBUG`, randomChoice);
+        console.log(`@DEBUG`, randomChildIndex);
         return node.children[randomChildIndex];
     }
 
