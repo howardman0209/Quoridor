@@ -38,7 +38,7 @@ function aiAction(data) {
     const cloneGame = Game.newInstance(data);
     const startProcessTime = Date.now();
     const result = MCTS.search(new Node(cloneGame), 2000, updateProgress);
-    console.log(`Execution time: ${Date.now() - startProcessTime} ms`);
+    console.log(`AI thinking time: ${Date.now() - startProcessTime} ms`);
     callback(`AI_ACTION`, result);
 }
 

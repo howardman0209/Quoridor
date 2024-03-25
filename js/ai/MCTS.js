@@ -19,8 +19,8 @@ export const MCTS = (() => {
                 if (child.visits !== 0) {
                     const exploitation = child.score / child.visits;
                     const exploration = Math.sqrt((2 * Math.log(node.visits)) / child.visits);
-                    // const effectiveHeuristic = AI.getEffectiveActionHeuristic(node.state, child.state);
-                    return exploitation + exploration;//+ effectiveHeuristic;
+                    const distanceHeuristicScore = AI.getDistanceHeuristicScore(child.state);
+                    return exploitation + exploration + distanceHeuristicScore;
                 } else {
                     return Infinity;
                 }
@@ -38,7 +38,8 @@ export const MCTS = (() => {
             }, []);
 
             // Randomly select one child node from the ones with the maximum UCB1 value
-            const randomChildIndex = maxUCB1Indices[Math.floor(Math.random() * maxUCB1Indices.length)];
+            const randomChoice = MathUtil.getRandomInt(maxUCB1Indices.length);
+            const randomChildIndex = maxUCB1Indices[randomChoice];
             node = node.children[randomChildIndex];
         }
 
@@ -149,22 +150,40 @@ export const MCTS = (() => {
     }
 
     function getBestChild(node) {
-        // Choose the child node with the highest average score
-        // Calculate the average score of each child node
-        // Return the child node with the highest average score
-        let bestChild = node;
-        let bestScore = -Infinity;
-
-        for (const child of node.children) {
-            const averageScore = child.score / child.visits;
-
-            if (averageScore > bestScore) {
-                bestScore = averageScore;
-                bestChild = child;
+        const ucb1Values = node.children.map(child => {
+            if (child.visits !== 0) {
+                const exploitation = child.score / child.visits;
+                const exploration = Math.sqrt((2 * Math.log(node.visits)) / child.visits);
+                // console.log(`@DEBUG`, child);
+                const distanceHeuristicScore = AI.getDistanceHeuristicScore(child.state);
+                // const remainingBlocksHeuristicScore = AI.getRemainingBlocksHeuristicScore(child.state) / child.visits;
+                return exploitation + exploration + distanceHeuristicScore// + remainingBlocksHeuristicScore;
+            } else {
+                return Infinity;
             }
-        }
+        });
 
-        return bestChild;
+        // Find the maximum UCB1 value
+        const maxUCB1Value = Math.max(...ucb1Values);
+
+        // Find all child nodes with the maximum UCB1 value
+        const maxUCB1Indices = ucb1Values.reduce((indices, value, index) => {
+            if (value === maxUCB1Value) {
+                indices.push(index);
+            }
+            return indices;
+        }, []);
+
+        // Randomly select one child node from the ones with the maximum UCB1 value
+        const randomChoice = MathUtil.getRandomInt(maxUCB1Indices.length);
+        const randomChildIndex = maxUCB1Indices[randomChoice];
+        // console.log(`@DEBUG`, node.children);
+        // console.log(`@DEBUG`, ucb1Values);
+        // console.log(`@DEBUG`, maxUCB1Value);
+        // console.log(`@DEBUG`, maxUCB1Indices);
+        // console.log(`@DEBUG`, randomChoice);
+        // console.log(`@DEBUG`, randomChildIndex);
+        return node.children[randomChildIndex];
     }
 
     return {
@@ -185,9 +204,10 @@ export const MCTS = (() => {
                     const currentNodeWinner = targetNode.state.checkWinner(true);
                     if (currentNodeWinner != null) {
                         if (currentNodeWinner == targetWinner) { // winning node
-                            backpropagation(targetNode, 9999);
+                            backpropagation(targetNode.parent, -1000);
+                            backpropagation(targetNode, 1000);
                         } else { // losing node
-                            backpropagation(targetNode, -9999);
+                            backpropagation(targetNode, -1000);
                         }
                     } else {
                         if (isNewNode) {

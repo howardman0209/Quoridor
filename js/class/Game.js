@@ -94,6 +94,7 @@ export class Game {
 
     #backToPreviousTurn() {
         this.numOfTurn--;
+        this.#updatePlayersShortestRoute();
     }
 
     #updatePlayersShortestRoute() {

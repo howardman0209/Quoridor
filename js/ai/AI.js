@@ -246,17 +246,18 @@ export const AI = (() => {
 
         },
 
-        getEffectiveActionHeuristic(before, after) {
-            // console.log(`before`, before, `after`, after);
-            const beforePlayer = before.player;
-            const beforeOpponent = before.opponent;
-            const afterPlayer = after.player;
-            const afterOpponent = after.opponent;
-            const pastShortestRoute = GameHelper.lookUpShortestRoute(before.arena, [beforePlayer.x, beforePlayer.y], beforePlayer.goalLine, [beforeOpponent.x, beforeOpponent.y]).length;
-            const currentShortestRoute = GameHelper.lookUpShortestRoute(after.arena, [afterOpponent.x, afterOpponent.y], afterOpponent.goalLine, [afterPlayer.x, afterPlayer.y]).length;
-            const score = pastShortestRoute - currentShortestRoute;
-            // console.log(afterOpponent, score);
-            return score;
+        getDistanceHeuristicScore(afterActionState) {
+            const [player, opponent] = [afterActionState.opponent, afterActionState.player];
+            if (opponent.shortestRoute != null && player.shortestRoute != null) {
+                return opponent.shortestRoute.length - player.shortestRoute.length;
+            }
+
+            return 0;
+        },
+
+        getRemainingBlocksHeuristicScore(afterActionState) {
+            const [player, opponent] = [afterActionState.opponent, afterActionState.player];
+            return player.remainingBlocks - opponent.remainingBlocks;
         },
 
         simulation: function (game) {
