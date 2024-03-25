@@ -5,6 +5,7 @@ import { Direction } from '../enum/Direction.js';
 import { MathUtil } from '../util/MathUtil.js';
 import { Action } from '../dataClass/Action.js';
 import { Log } from '../util/Log.js';
+import { Game } from '../class/Game.js';
 import { Turn } from '../enum/Turn.js';
 
 export const AI = (() => {
@@ -129,7 +130,7 @@ export const AI = (() => {
 
         winInNextMove: function (game) {
             const player = game.player;
-            let playerShortest = game.getShortestRoute(true);
+            let playerShortest = game.player.shortestRoute;
             if (playerShortest == null) {
                 return false;
             }
@@ -260,10 +261,10 @@ export const AI = (() => {
 
         simulation: function (game) {
             const actionList = [];// tmp add to check
-            const simulationGame = game.deepCopy();
-            // Log.d(`simulation init state`, simulationGame);
+            const simulationGame = Game.newInstance(game.cloneData);
+            Log.d(`simulation init state`, simulationGame);
 
-            while (simulationGame.checkWinner() == null) {
+            while (simulationGame.checkWinner(true) == null) {
                 // state 1: choose move or block
                 const moveOrBlock = this.moveOrBlock(simulationGame);
                 // Log.d(`AI, moveOrBlock`, moveOrBlock);
@@ -272,7 +273,7 @@ export const AI = (() => {
                 let action = undefined
                 if (moveOrBlock == ActionType.MOVE) {
                     const validMoves = simulationGame.getValidMoves(true);
-                    const shortestRoute = simulationGame.getShortestRoute(true);
+                    const shortestRoute = simulationGame.player.shortestRoute;
                     const randomChance = Math.random() < 0.75
                     // ensure game reach terminate status & accelerate simulation
                     if (shortestRoute != null && (simulationGame.opponent.remainingBlocks == 0 || this.winInNextMove(game) || randomChance)) {
@@ -296,9 +297,9 @@ export const AI = (() => {
                     // Log.d(`AI, turn: ${simulationGame.numOfTurn} status`, simulationGame);
                 }
             }
-            // Log.d(`actionList (${actionList.length})`, actionList);
+            Log.d(`actionList (${actionList.length})`, actionList);
 
-            return simulationGame.checkWinner();
+            return simulationGame.checkWinner(true);
         }
     };
 })();

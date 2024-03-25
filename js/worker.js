@@ -34,10 +34,11 @@ function aiAction(data) {
         // console.log(`progress: ${progress}%`);
         callback(`UPDATE_PROGRESS`, progress);
     }
+    // console.log(data);
     const cloneGame = Game.newInstance(data);
-    console.log(cloneGame);
+    const startProcessTime = Date.now();
     const result = MCTS.search(new Node(cloneGame), 2000, updateProgress);
-
+    console.log(`Execution time: ${Date.now() - startProcessTime} ms`);
     callback(`AI_ACTION`, result);
 }
 

@@ -6,6 +6,7 @@ export class Player {
         [this.x, this.y] = this.#getInitialPosition(turn, arenaSize);
         this.goalLine = this.#getGoalLine(turn, arenaSize);
         this.remainingBlocks = blockLimit;
+        this.shortestRoute = [];
     }
 
     #getInitialPosition(turn, arenaSize) {

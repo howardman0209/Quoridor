@@ -2,6 +2,7 @@ import { Node } from '../class/Node.js';
 import { MathUtil } from '../util/MathUtil.js';
 import { Action } from '../dataClass/Action.js';
 import { ActionType } from '../enum/ActionType.js';
+import { Game } from '../class/Game.js';
 import { Log } from '../util/Log.js';
 import { AI } from '../ai/AI.js';
 
@@ -54,7 +55,7 @@ export const MCTS = (() => {
         // Log.d(`validActions`, validActions);
         validActions.forEach(action => {
             // Create a new child node with the updated game state
-            const newState = node.state.deepCopy();
+            const newState = Game.newInstance(node.state.cloneData);
             newState.doAction(action);
             const childNode = new Node(newState, action);
             // Log.d(`childNode`, childNode);
@@ -72,7 +73,7 @@ export const MCTS = (() => {
         // console.log(`rollout`, nodeState.currentTurn);
         const winInNextMove = (game) => {
             const player = game.player;
-            let playerShortest = game.getShortestRoute(true);
+            let playerShortest = game.player.shortestRoute;
             if (playerShortest == null) {
                 return false;
             }
@@ -96,10 +97,10 @@ export const MCTS = (() => {
         }
 
         const actionList = [];// tmp add to check
-        const simulationGame = nodeState.deepCopy();
+        const simulationGame = Game.newInstance(nodeState.cloneData);
         // Log.d(`simulation init state`, simulationGame);
 
-        while (simulationGame.checkWinner() == null) {
+        while (simulationGame.checkWinner(true) == null) {
             // state 1: choose move or block
             const moveOrBlock = decideMoveOrBlock(simulationGame);
             // Log.d(`AI, moveOrBlock`, moveOrBlock);
@@ -108,7 +109,7 @@ export const MCTS = (() => {
             let action = undefined
             if (moveOrBlock == ActionType.MOVE) {
                 const validMoves = simulationGame.getValidMoves(true);
-                const shortestRoute = simulationGame.getShortestRoute(true);
+                const shortestRoute = simulationGame.player.shortestRoute;
                 const randomChance = Math.random() < 0.75
                 // ensure game reach terminate status & accelerate simulation
                 if (shortestRoute != null && (simulationGame.opponent.remainingBlocks == 0 || winInNextMove(nodeState) || randomChance)) {
@@ -134,7 +135,7 @@ export const MCTS = (() => {
         }
         // Log.d(`actionList (${actionList.length})`, actionList);
 
-        return simulationGame.checkWinner();
+        return simulationGame.checkWinner(true);
     }
 
     function backpropagation(node, score) {
@@ -181,7 +182,7 @@ export const MCTS = (() => {
                     targetNode = selection(rootNode);
                     // console.log(`targetNode`, targetNode);
                     const isNewNode = targetNode.visits == 0;
-                    const currentNodeWinner = targetNode.state.checkWinner();
+                    const currentNodeWinner = targetNode.state.checkWinner(true);
                     if (currentNodeWinner != null) {
                         if (currentNodeWinner == targetWinner) { // winning node
                             backpropagation(targetNode, 9999);

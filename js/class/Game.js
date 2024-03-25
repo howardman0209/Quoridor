@@ -7,12 +7,21 @@ import { Action } from '../dataClass/Action.js';
 import { ActionType } from '../enum/ActionType.js';
 
 export class Game {
-    constructor(arenaSize, playerOrder) {
-        this.arena = this.#initArena(arenaSize);
-        this.p1 = this.#initPlayer(arenaSize, Turn.P1);
-        this.p2 = this.#initPlayer(arenaSize, Turn.P2);
-        this.playerOrder = playerOrder;
-        this.numOfTurn = 1;
+    constructor(arenaSize, playerOrder, forClone) {
+        this.arena = null;
+        this.p1 = null;
+        this.p2 = null;
+        this.playerOrder = null;
+        this.numOfTurn = null;
+
+        if (!forClone) {
+            this.arena = this.#initArena(arenaSize);
+            this.p1 = this.#initPlayer(arenaSize, Turn.P1);
+            this.p2 = this.#initPlayer(arenaSize, Turn.P2);
+            this.playerOrder = playerOrder;
+            this.numOfTurn = 1;
+            this.#updatePlayersShortestRoute();
+        }
     }
 
     restart() {
@@ -40,15 +49,8 @@ export class Game {
     }
 
 
-    deepCopy() {
-        const cloneData = JSON.parse(JSON.stringify(this));
-        const p1 = Object.assign(new Player, cloneData.p1);
-        const p2 = Object.assign(new Player, cloneData.p2);
-        const newGame = Object.assign(new Game, cloneData);
-        newGame.p1 = p1;
-        newGame.p2 = p2;
-        // newGame.loadData(cloneData);
-        return newGame;
+    get cloneData() {
+        return JSON.parse(JSON.stringify(this));
     }
 
     loadData(gameMeta) {
@@ -62,10 +64,9 @@ export class Game {
 
         const p1 = Object.assign(new Player, gameMeta.p1);
         const p2 = Object.assign(new Player, gameMeta.p2);
-        const tmpGame = Object.assign(new Game, gameMeta);
-        this.arena = tmpGame.arena;
-        this.playerOrder = tmpGame.playerOrder;
-        this.numOfTurn = tmpGame.numOfTurn;
+        this.arena = gameMeta.arena;
+        this.numOfTurn = gameMeta.numOfTurn;
+        this.playerOrder = gameMeta.playerOrder;
         this.p1 = p1;
         this.p2 = p2;
     }
@@ -88,10 +89,19 @@ export class Game {
 
     #goToNextTurn() {
         this.numOfTurn++;
+        this.#updatePlayersShortestRoute();
     }
 
     #backToPreviousTurn() {
         this.numOfTurn--;
+    }
+
+    #updatePlayersShortestRoute() {
+        const p1ShortestRoute = GameHelper.lookUpShortestRoute(this.arena, [this.p1.x, this.p1.y], this.p1.goalLine, [this.p2.x, this.p2.y]);
+        const p2ShortestRoute = GameHelper.lookUpShortestRoute(this.arena, [this.p2.x, this.p2.y], this.p2.goalLine, [this.p1.x, this.p1.y]);
+
+        this.p1.shortestRoute = p1ShortestRoute;
+        this.p2.shortestRoute = p2ShortestRoute;
     }
 
     getValidMoves(considerOpponent) {
@@ -150,7 +160,7 @@ export class Game {
 
     #isDeadBlock(block) {
         // temporaryPlaceBlock(block)
-        const tmpGame = this.deepCopy();
+        const tmpGame = Game.newInstance(this.cloneData);
         const arena = tmpGame.arena;
 
         // place block
@@ -219,7 +229,7 @@ export class Game {
         return GameHelper.lookUpShortestRoute(this.arena, start, player.goalLine, opponent)
     }
 
-    checkWinner() {
+    checkWinner(checkFuture) {
         // check current terminated state
         if (this.player.y == this.player.goalLine) {
             return this.currentTurn;
@@ -229,22 +239,27 @@ export class Game {
             return this.nextTurn;
         }
 
-        // check predictable terminated state
-        if (this.opponent.remainingBlocks <= 0) {
-            const playerShortestRoute = GameHelper.lookUpShortestRoute(this.arena, [this.player.x, this.player.y], this.player.goalLine, [this.opponent.x, this.opponent.y]);
-            const opponentShortestRoute = GameHelper.lookUpShortestRoute(this.arena, [this.opponent.x, this.opponent.y], this.opponent.goalLine, [this.player.x, this.player.y]);
-            if (playerShortestRoute != null && opponentShortestRoute != null && playerShortestRoute.length < opponentShortestRoute.length) {
-                return this.currentTurn;
+        if (checkFuture) {
+            // check predictable terminated state
+            if (this.opponent.remainingBlocks <= 0) {
+                const playerShortestRoute = GameHelper.lookUpShortestRoute(this.arena, [this.player.x, this.player.y], this.player.goalLine, [this.opponent.x, this.opponent.y]);
+                const opponentShortestRoute = GameHelper.lookUpShortestRoute(this.arena, [this.opponent.x, this.opponent.y], this.opponent.goalLine, [this.player.x, this.player.y]);
+                if (playerShortestRoute != null && opponentShortestRoute != null && playerShortestRoute.length < opponentShortestRoute.length) {
+                    return this.currentTurn;
+                }
             }
+
+            if (this.player.remainingBlocks <= 0) {
+                const playerShortestRoute = GameHelper.lookUpShortestRoute(this.arena, [this.player.x, this.player.y], this.player.goalLine, [this.opponent.x, this.opponent.y]);
+                const opponentShortestRoute = GameHelper.lookUpShortestRoute(this.arena, [this.opponent.x, this.opponent.y], this.opponent.goalLine, [this.player.x, this.player.y]);
+                if (playerShortestRoute != null && opponentShortestRoute != null && opponentShortestRoute.length < playerShortestRoute.length) {
+                    return this.nextTurn;
+                }
+            }
+        } else {
+            return null;
         }
 
-        if (this.player.remainingBlocks <= 0) {
-            const playerShortestRoute = GameHelper.lookUpShortestRoute(this.arena, [this.player.x, this.player.y], this.player.goalLine, [this.opponent.x, this.opponent.y]);
-            const opponentShortestRoute = GameHelper.lookUpShortestRoute(this.arena, [this.opponent.x, this.opponent.y], this.opponent.goalLine, [this.player.x, this.player.y]);
-            if (playerShortestRoute != null && opponentShortestRoute != null && opponentShortestRoute.length < playerShortestRoute.length) {
-                return this.nextTurn;
-            }
-        }
 
         return null;
     }
@@ -293,7 +308,7 @@ export class Game {
 
 Game.newInstance = function (gameMeta) {
     const size = (gameMeta.arena.length + 1) / 2;
-    const game = GameHelper.initGame(size);
+    const game = new Game(size, [], true);
     game.loadData(gameMeta);
     return game;
 }

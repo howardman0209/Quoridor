@@ -243,7 +243,7 @@ function sendWorkerRequest() {
 
     const request = {
         "task": "AI_ACTION",
-        "data": game.deepCopy()
+        "data": game.cloneData
     };
     worker.postMessage(request);
 }
@@ -305,8 +305,6 @@ const game = GameHelper.initGame(gameSize);
 const gameTracker = new GameTracker(game);
 const worker = new Worker("./js/worker.js", { type: "module" });
 setWorkerLisenter();
-// const clone = game.deepCopy()
-// console.log(game);
 drawBoard();
 updateTurnLabel();
 updateBlocksRemain();
@@ -457,11 +455,11 @@ document.addEventListener(
                 break;
             case 't':
                 sendWorkerRequest();
-                // console.log(`testing`, game.getShortestRoute(true));
                 break;
             case 's':
                 AI.simulation(game);
-                // console.log(game.deepCopy());
+                break;
+            case 'z':
                 break;
             default:
                 break;
