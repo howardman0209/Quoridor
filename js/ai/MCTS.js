@@ -20,8 +20,8 @@ export const MCTS = (() => {
                     const exploitation = child.score / child.visits;
                     const exploration = Math.sqrt((2 * Math.log(node.visits)) / child.visits);
                     const ucb = exploitation + exploration;
-                    const distanceHeuristicScore = AI.getDistanceHeuristicScore(child.state);
-                    return ucb + distanceHeuristicScore;
+                    const heuristicScore = AI.getHeuristicScore(child.state);
+                    return ucb + heuristicScore;
                 } else {
                     return Infinity;
                 }
@@ -156,8 +156,8 @@ export const MCTS = (() => {
                 const exploitation = child.score / child.visits;
                 const exploration = Math.sqrt((2 * Math.log(node.visits)) / child.visits);
                 const ucb = exploitation + exploration;
-                const distanceHeuristicScore = AI.getDistanceHeuristicScore(child.state);
-                return ucb + distanceHeuristicScore;
+                const heuristicScore = AI.getHeuristicScore(child.state);
+                return ucb + heuristicScore;
             } else {
                 return Infinity;
             }

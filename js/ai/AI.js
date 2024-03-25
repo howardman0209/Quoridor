@@ -246,13 +246,20 @@ export const AI = (() => {
 
         },
 
-        getDistanceHeuristicScore(afterActionState) {
+        getHeuristicScore(afterActionState) {
+            let heuristicScore = 0
             const [player, opponent] = [afterActionState.opponent, afterActionState.player];
             if (opponent.shortestRoute != null && player.shortestRoute != null) {
-                return (opponent.shortestRoute.length - player.shortestRoute.length) * 100;
+                const distanceHeuristic = (opponent.shortestRoute.length - player.shortestRoute.length) * 100;
+                heuristicScore += distanceHeuristic;
             }
 
-            return 0;
+            if (afterActionState.numOfTurn < 6){
+                const remainingBlocksHeuristic = (player.remainingBlocks - opponent.remainingBlocks) * 50;
+                heuristicScore += remainingBlocksHeuristic;
+            }
+
+            return heuristicScore;
         },
 
         getRemainingBlocksHeuristicScore(afterActionState) {
