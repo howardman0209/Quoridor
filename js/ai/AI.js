@@ -269,7 +269,7 @@ export const AI = (() => {
 
         simulation: function (game) {
             const actionList = [];// tmp add to check
-            const simulationGame = Game.newInstance(game.cloneData);
+            const simulationGame = Game.clone(game.cloneData);
             Log.d(`simulation init state`, simulationGame);
 
             while (simulationGame.checkWinner(true) == null) {

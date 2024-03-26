@@ -57,7 +57,7 @@ export const MCTS = (() => {
         // Log.d(`validActions`, validActions);
         validActions.forEach(action => {
             // Create a new child node with the updated game state
-            const newState = Game.newInstance(node.state.cloneData);
+            const newState = Game.clone(node.state.cloneData);
             newState.doAction(action);
             const childNode = new Node(newState, action);
             // Log.d(`childNode`, childNode);
@@ -99,7 +99,7 @@ export const MCTS = (() => {
         }
 
         const actionList = [];// tmp add to check
-        const simulationGame = Game.newInstance(nodeState.cloneData);
+        const simulationGame = Game.clone(nodeState.cloneData);
         // Log.d(`simulation init state`, simulationGame);
 
         while (simulationGame.checkWinner(true) == null) {

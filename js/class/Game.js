@@ -62,8 +62,8 @@ export class Game {
             }
         });
 
-        const p1 = Object.assign(new Player, gameMeta.p1);
-        const p2 = Object.assign(new Player, gameMeta.p2);
+        const p1 = Player.clone(gameMeta.p1);
+        const p2 = Player.clone(gameMeta.p2);
         this.arena = gameMeta.arena;
         this.numOfTurn = gameMeta.numOfTurn;
         this.playerOrder = gameMeta.playerOrder;
@@ -161,7 +161,7 @@ export class Game {
 
     #isDeadBlock(block) {
         // temporaryPlaceBlock(block)
-        const tmpGame = Game.newInstance(this.cloneData);
+        const tmpGame = Game.clone(this.cloneData);
         const arena = tmpGame.arena;
 
         // place block
@@ -307,9 +307,8 @@ export class Game {
 
 }
 
-Game.newInstance = function (gameMeta) {
-    const size = (gameMeta.arena.length + 1) / 2;
-    const game = new Game(size, [], true);
-    game.loadData(gameMeta);
-    return game;
+Game.clone = function (gameMeta) {
+    const cloneGame = new Game(0, [], true);
+    cloneGame.loadData(gameMeta);
+    return cloneGame;
 }
